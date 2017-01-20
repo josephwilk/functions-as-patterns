@@ -18,6 +18,7 @@
 (def working-dir "/Users/josephwilk/Desktop/clojure_functions")
 
 (defn hues
+  ([steps] (hues steps 30 10))
   ([steps base] (hues steps base 100))
   ([steps factor base]
    (map
@@ -48,26 +49,25 @@
     (doall
      (map-indexed (fn [idx color]
                     (if (sequential? color)
-                      (do
+                      (let [cells (count color)]
                         (paint-rectangle! bi
                                           rgb-darker-highlight-color
-                                          (+ (* (count color) rect-size idx))
+                                          (+ (* cells rect-size idx))
                                           0
-                                          (* (count color) rect-size)
+                                          (* cells rect-size)
                                           stroke-size)
                         (doall
                          (map-indexed (fn [idx2 color2]
                                           (let [rect-size (/ rect-size 2.0)
-                                                indent (* idx (count color) rect-size)
-                                                spacer (* idx (* rect-size (count color)))
-                                                ]
+                                                indent (* idx cells rect-size)
+                                                spacer (* idx (* rect-size cells))]
                                             (paint-rectangle! bi color2
-                                                              (+ (/ (* cols rect-size) 4) spacer indent (* idx2 rect-size))
+                                                              (+ (/ (* cols rect-size) cells) spacer indent (* idx2 rect-size))
                                                               (/ rect-size 2)
                                                               rect-size
                                                               stroke-size))
-                                          )
-                                        color)))
+                                        )
+                                      color)))
                       (paint-rectangle! bi color (* rect-size idx) 0 rect-size stroke-size)))
                   data))
     (show bi :zoom 1.0 :title title)
@@ -113,20 +113,20 @@
 
 (example->color
  {:fn clojure.core/nthrest
-  :args [(hues 15 10 highlight-color)
+  :args [(hues 25 10 highlight-color)
          4]})
 
 (example->color
  {:fn clojure.core/shuffle
-  :args [(hues 15 10 highlight-color)]})
+  :args [(hues 25 10 highlight-color)]})
 
 (example->color
  {:fn  clojure.core/replace
-  :args [(vec (hues 15 10 highlight-color))
+  :args [(vec (hues 25 10 highlight-color))
          [0 3 4 5]]})
 
 ;;nested lists patterns
 (example->color
  {:fn clojure.core/partition
   :args [4
-         (hues 15 10 highlight-color)]})
+         (hues 25 10 highlight-color)]})
