@@ -41,15 +41,16 @@
 
 (defn render [data title]
   (let [rect-size 100
-        cols (count (flatten data))
+        total-cells (count (flatten data))
         stroke-size 1
-        bi (new-image (+ (* cols rect-size) stroke-size) rect-size)]
+        bi (new-image (+ (* total-cells rect-size) stroke-size) rect-size)]
 
     (fill! bi (colors/rgba-int stroke-color))
     (doall
      (map-indexed (fn [idx color]
                     (if (sequential? color)
-                      (let [cells (count color)]
+                      (let [previous-cells (count data)
+                            cells (count color)]
                         (paint-rectangle! bi
                                           rgb-darker-highlight-color
                                           (+ (* cells rect-size idx))
@@ -58,13 +59,15 @@
                                           stroke-size)
                         (doall
                          (map-indexed (fn [idx2 color2]
-                                          (let [rect-size (/ rect-size 2.0)
-                                                indent (* idx cells rect-size)
-                                                spacer (* idx (* rect-size cells))]
+                                          (let [new-rect-size (/ rect-size previous-cells)
+                                                indent        (* previous-cells idx cells new-rect-size)]
                                             (paint-rectangle! bi color2
-                                                              (+ (/ (* cols rect-size) cells) spacer indent (* idx2 rect-size))
-                                                              (/ rect-size 2)
-                                                              rect-size
+                                                              (+
+                                                               (/ (* previous-cells rect-size) previous-cells)
+                                                               indent
+                                                               (* idx2 new-rect-size))
+                                                              (/ new-rect-size 2)
+                                                              new-rect-size
                                                               stroke-size))
                                         )
                                       color)))
