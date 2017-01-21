@@ -7,7 +7,7 @@
 (def highlight-color (colors/create-color "#EE5C96"))
 (def stroke-color    (colors/create-color "#111111"))
 
-(def darker-highlight-color (colors/adjust-hue (colors/create-color "#3A396C") -5))
+(def darker-highlight-color (colors/adjust-hue (colors/create-color "#3A396C") -35))
 
 
 (def rgb-blank-color     (colors/rgba-int blank-color))
@@ -59,11 +59,11 @@
                                           stroke-size)
                         (doall
                          (map-indexed (fn [idx2 color2]
-                                          (let [new-rect-size (/ rect-size previous-cells)
-                                                indent        (* previous-cells idx cells new-rect-size)]
+                                          (let [new-rect-size (/ rect-size 2)
+                                                indent        (* idx cells rect-size)]
                                             (paint-rectangle! bi color2
                                                               (+
-                                                               (/ (* previous-cells rect-size) previous-cells)
+                                                               (/ (- (* rect-size cells) (* cells new-rect-size)) 2)
                                                                indent
                                                                (* idx2 new-rect-size))
                                                               (/ new-rect-size 2)
