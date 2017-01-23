@@ -50,7 +50,10 @@
      (map-indexed (fn [idx color]
                     (if (sequential? color)
                       (let [previous-cells (count data)
-                            cells (count color)]
+                            cells (count color)
+                            new-rect-size (/ rect-size 2)
+                            parent-indent (* idx cells rect-size)
+                            middle-position (/ (- (* rect-size cells) (* new-rect-size cells)) 2)]
                         (paint-rectangle! bi
                                           rgb-darker-highlight-color
                                           (+ (* cells rect-size idx))
@@ -59,18 +62,16 @@
                                           stroke-size)
                         (doall
                          (map-indexed (fn [idx2 color2]
-                                          (let [new-rect-size (/ rect-size 2)
-                                                indent        (* idx cells rect-size)]
-                                            (paint-rectangle! bi color2
-                                                              (+
-                                                               (/ (- (* rect-size cells) (* cells new-rect-size)) 2)
-                                                               indent
-                                                               (* idx2 new-rect-size))
-                                                              (/ new-rect-size 2)
-                                                              new-rect-size
-                                                              stroke-size))
+                                        (paint-rectangle! bi color2
+                                                          (+
+                                                            middle-position
+                                                            parent-indent
+                                                            (* idx2 new-rect-size))
+                                                            (/ new-rect-size 2)
+                                                            new-rect-size
+                                                            stroke-size))
                                         )
-                                      color)))
+                                      color))
                       (paint-rectangle! bi color (* rect-size idx) 0 rect-size stroke-size)))
                   data))
     (show bi :zoom 1.0 :title title)
