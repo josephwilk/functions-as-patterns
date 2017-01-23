@@ -26,7 +26,7 @@
                      (colors/adjust-hue base hue-adjust)))
     (range 0 (* steps factor) steps))))
 
-(defn paint-rectangle! [img color posx posy rect-size stroke-size]
+(defn paint-stroked-rectangle! [img color posx posy rect-size stroke-size]
   (let [x (+ posx stroke-size)
         y (+ posy stroke-size)
         w (- rect-size stroke-size)
@@ -40,6 +40,12 @@
                 w h color)))
 
 (defn leaf? [node] (not (sequential? node)))
+(defn children? [node] (sequential? node))
+
+(defn paint-rectangle! [img color rect-size stroke-size pos]
+  (if (leaf? color)
+    (paint-stroked-rectangle! img color                      (* rect-size pos)               0 rect-size                   stroke-size)
+    (paint-stroked-rectangle! img rgb-darker-highlight-color (* (count color) rect-size pos) 0 (* (count color) rect-size) stroke-size)))
 
 (defn render [data title]
   (let [rect-size 100
@@ -49,33 +55,29 @@
 
     (fill! bi (colors/rgba-int stroke-color))
     (doall
-     (map-indexed (fn [idx color]
-                    (if (leaf? color)
-                      (paint-rectangle! bi color (* rect-size idx) 0 rect-size stroke-size)))
-                    
-                    (let [previous-cells (count data)
-                          cells (count color)
-                          new-rect-size (/ rect-size 2)
-                          parent-indent (* idx cells rect-size)
-                          middle-position (/ (- (* rect-size cells) (* new-rect-size cells)) 2)]
-                        (paint-rectangle! bi
-                                          rgb-darker-highlight-color
-                                          (+ (* cells rect-size idx))
-                                          0
-                                          (* cells rect-size)
-                                          stroke-size)
-                        (doall
-                         (map-indexed (fn [idx2 color2]
-                                        (paint-rectangle! bi color2
-                                                          (+
-                                                            middle-position
-                                                            parent-indent
-                                                            (* idx2 new-rect-size))
-                                                            (/ new-rect-size 2)
-                                                            new-rect-size
-                                                            stroke-size))
-                                        )
-                                      color))
+     (map-indexed
+      (fn [idx color]
+        (paint-rectangle! bi color rect-size stroke-size idx)
+
+        (when (children? color)
+          (let [previous-cells (count data)
+                cells (count color)
+                new-rect-size (/ rect-size 2)
+                parent-indent (* idx cells rect-size)
+                middle-position (/ (- (* rect-size cells) (* new-rect-size cells)) 2)]
+            (doall
+             (map-indexed (fn [idx2 color2]
+                            (paint-stroked-rectangle! bi color2
+                                                      (+
+                                                       middle-position
+                                                       parent-indent
+                                                       (* idx2 new-rect-size))
+                                                      (/ new-rect-size 2)
+
+                                                      new-rect-size
+                                                      stroke-size))
+
+                          color)))))
 
                   data))
     (show bi :zoom 1.0 :title title)
@@ -136,28 +138,28 @@
 ;;nested lists patterns
 (example->color
  {:fn clojure.core/partition
-  :args [4
+  :args [2
          (hues 25 10 highlight-color)]})
 
 
-;;Get shorter	
+;;Get shorter
 ;;;distinct filter remove take-nth for
 
-;;Get longer	
+;;Get longer
 ;;;cons conj concat lazy-cat mapcat cycle interleave interpose
 
-;;Tail-items	
+;;Tail-items
 ;;;rest nthrest next fnext nnext drop drop-while take-last for
 
-;;Head-items	
+;;Head-items
 ;;;take take-while butlast drop-last for
 
-;;'Change'	
-;;;conj concat distinct flatten group-by partition partition-all partition-by split-at split-with filter 
+;;'Change'
+;;;conj concat distinct flatten group-by partition partition-all partition-by split-at split-with filter
 ;;;remove replace shuffle
 
-;;Rearrange	
+;;Rearrange
 ;;;reverse sort sort-by compare
 
-;;Process items	
+;;Process items
 ;;;map pmap map-indexed mapcat for replace seque
