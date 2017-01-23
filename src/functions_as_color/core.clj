@@ -47,10 +47,9 @@
     (paint-stroked-rectangle! img color                      (+ x-offset (* rect-size pos))               y-offset rect-size                   stroke-size)
     (paint-stroked-rectangle! img rgb-darker-highlight-color (+ x-offset (* (count color) rect-size pos)) y-offset (* (count color) rect-size) stroke-size)))
 
-
-(defn paint-all! [img rect-size stroke-size]
+(defn paint-all! [img rect-size stroke-size x-offset y-offset]
   (fn [idx color]
-    (paint-rectangle! img color rect-size stroke-size idx 0 0)
+    (paint-rectangle! img color rect-size stroke-size idx x-offset y-offset)
 
     (when (children? color)
       (let [cells           (count color)
@@ -59,15 +58,7 @@
             middle-position (/ (- (* rect-size cells) (* new-rect-size cells)) 2)]
         (doall
          (map-indexed
-          (fn [idx2 color-child]
-            (paint-rectangle!
-             img
-             color-child
-             new-rect-size
-             stroke-size
-             idx2
-             (+ parent-indent middle-position)
-             (/ new-rect-size 2)))
+          (paint-all! img new-rect-size stroke-size (+ parent-indent middle-position) (/ new-rect-size 2))
           color))))))
 
 (defn render [data title]
@@ -77,7 +68,7 @@
         bi (new-image (+ (* total-cells rect-size) stroke-size) rect-size)]
 
     (fill! bi (colors/rgba-int stroke-color))
-    (doall (map-indexed (paint-all! bi rect-size stroke-size) data))
+    (doall (map-indexed (paint-all! bi rect-size stroke-size 0 0) data))
     (show bi :zoom 1.0 :title title)
     (save bi (str working-dir "/" title ".png"))))
 
