@@ -42,10 +42,10 @@
 (defn leaf? [node] (not (sequential? node)))
 (defn children? [node] (sequential? node))
 
-(defn paint-rectangle! [img color rect-size stroke-size pos]
+(defn paint-rectangle! [img color rect-size stroke-size pos x-offset y-offset]
   (if (leaf? color)
-    (paint-stroked-rectangle! img color                      (* rect-size pos)               0 rect-size                   stroke-size)
-    (paint-stroked-rectangle! img rgb-darker-highlight-color (* (count color) rect-size pos) 0 (* (count color) rect-size) stroke-size)))
+    (paint-stroked-rectangle! img color                      (+ x-offset (* rect-size pos))               y-offset rect-size                   stroke-size)
+    (paint-stroked-rectangle! img rgb-darker-highlight-color (+ x-offset (* (count color) rect-size pos)) y-offset (* (count color) rect-size) stroke-size)))
 
 (defn render [data title]
   (let [rect-size 100
@@ -57,26 +57,22 @@
     (doall
      (map-indexed
       (fn [idx color]
-        (paint-rectangle! bi color rect-size stroke-size idx)
-
+        (paint-rectangle! bi color rect-size stroke-size idx 0 0)
         (when (children? color)
-          (let [previous-cells (count data)
-                cells (count color)
-                new-rect-size (/ rect-size 2)
-                parent-indent (* idx cells rect-size)
+          (let [cells           (count color)
+                new-rect-size   (/ rect-size 2)
+                parent-indent   (* idx cells rect-size)
                 middle-position (/ (- (* rect-size cells) (* new-rect-size cells)) 2)]
             (doall
-             (map-indexed (fn [idx2 color2]
-                            (paint-stroked-rectangle! bi color2
-                                                      (+
-                                                       middle-position
-                                                       parent-indent
-                                                       (* idx2 new-rect-size))
-                                                      (/ new-rect-size 2)
-
-                                                      new-rect-size
-                                                      stroke-size))
-
+             (map-indexed (fn [idx2 color-child]
+                            (paint-rectangle!
+                             bi
+                             color-child
+                             new-rect-size
+                             stroke-size
+                             idx2
+                             (+ parent-indent middle-position)
+                             (/ new-rect-size 2)))
                           color)))))
 
                   data))
@@ -138,7 +134,7 @@
 ;;nested lists patterns
 (example->color
  {:fn clojure.core/partition
-  :args [2
+  :args [3
          (hues 25 10 highlight-color)]})
 
 
