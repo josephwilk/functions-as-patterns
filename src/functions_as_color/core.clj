@@ -58,16 +58,17 @@
             parent-indent   (* idx cells rect-size)
             middle-position (/ (- (* rect-size cells) (* new-rect-size cells)) 2)]
         (doall
-         (map-indexed (fn [idx2 color-child]
-                        (paint-rectangle!
-                         img
-                         color-child
-                         new-rect-size
-                         stroke-size
-                         idx2
-                         (+ parent-indent middle-position)
-                         (/ new-rect-size 2)))
-                      color))))))
+         (map-indexed
+          (fn [idx2 color-child]
+            (paint-rectangle!
+             img
+             color-child
+             new-rect-size
+             stroke-size
+             idx2
+             (+ parent-indent middle-position)
+             (/ new-rect-size 2)))
+          color))))))
 
 (defn render [data title]
   (let [rect-size 100
