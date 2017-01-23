@@ -39,6 +39,8 @@
                 x y
                 w h color)))
 
+(defn leaf? [node] (not (sequential? node)))
+
 (defn render [data title]
   (let [rect-size 100
         total-cells (count (flatten data))
@@ -48,12 +50,14 @@
     (fill! bi (colors/rgba-int stroke-color))
     (doall
      (map-indexed (fn [idx color]
-                    (if (sequential? color)
-                      (let [previous-cells (count data)
-                            cells (count color)
-                            new-rect-size (/ rect-size 2)
-                            parent-indent (* idx cells rect-size)
-                            middle-position (/ (- (* rect-size cells) (* new-rect-size cells)) 2)]
+                    (if (leaf? color)
+                      (paint-rectangle! bi color (* rect-size idx) 0 rect-size stroke-size)))
+                    
+                    (let [previous-cells (count data)
+                          cells (count color)
+                          new-rect-size (/ rect-size 2)
+                          parent-indent (* idx cells rect-size)
+                          middle-position (/ (- (* rect-size cells) (* new-rect-size cells)) 2)]
                         (paint-rectangle! bi
                                           rgb-darker-highlight-color
                                           (+ (* cells rect-size idx))
@@ -72,7 +76,7 @@
                                                             stroke-size))
                                         )
                                       color))
-                      (paint-rectangle! bi color (* rect-size idx) 0 rect-size stroke-size)))
+
                   data))
     (show bi :zoom 1.0 :title title)
     (save bi (str working-dir "/" title ".png"))))
