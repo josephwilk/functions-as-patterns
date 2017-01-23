@@ -133,3 +133,26 @@
  {:fn clojure.core/partition
   :args [4
          (hues 25 10 highlight-color)]})
+
+
+;;Get shorter	
+;;;distinct filter remove take-nth for
+
+;;Get longer	
+;;;cons conj concat lazy-cat mapcat cycle interleave interpose
+
+;;Tail-items	
+;;;rest nthrest next fnext nnext drop drop-while take-last for
+
+;;Head-items	
+;;;take take-while butlast drop-last for
+
+;;'Change'	
+;;;conj concat distinct flatten group-by partition partition-all partition-by split-at split-with filter 
+;;;remove replace shuffle
+
+;;Rearrange	
+;;;reverse sort sort-by compare
+
+;;Process items	
+;;;map pmap map-indexed mapcat for replace seque
