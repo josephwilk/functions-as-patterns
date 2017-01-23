@@ -47,6 +47,28 @@
     (paint-stroked-rectangle! img color                      (+ x-offset (* rect-size pos))               y-offset rect-size                   stroke-size)
     (paint-stroked-rectangle! img rgb-darker-highlight-color (+ x-offset (* (count color) rect-size pos)) y-offset (* (count color) rect-size) stroke-size)))
 
+
+(defn paint-all! [img rect-size stroke-size]
+  (fn [idx color]
+    (paint-rectangle! img color rect-size stroke-size idx 0 0)
+
+    (when (children? color)
+      (let [cells           (count color)
+            new-rect-size   (/ rect-size 2)
+            parent-indent   (* idx cells rect-size)
+            middle-position (/ (- (* rect-size cells) (* new-rect-size cells)) 2)]
+        (doall
+         (map-indexed (fn [idx2 color-child]
+                        (paint-rectangle!
+                         img
+                         color-child
+                         new-rect-size
+                         stroke-size
+                         idx2
+                         (+ parent-indent middle-position)
+                         (/ new-rect-size 2)))
+                      color))))))
+
 (defn render [data title]
   (let [rect-size 100
         total-cells (count (flatten data))
@@ -54,28 +76,7 @@
         bi (new-image (+ (* total-cells rect-size) stroke-size) rect-size)]
 
     (fill! bi (colors/rgba-int stroke-color))
-    (doall
-     (map-indexed
-      (fn [idx color]
-        (paint-rectangle! bi color rect-size stroke-size idx 0 0)
-        (when (children? color)
-          (let [cells           (count color)
-                new-rect-size   (/ rect-size 2)
-                parent-indent   (* idx cells rect-size)
-                middle-position (/ (- (* rect-size cells) (* new-rect-size cells)) 2)]
-            (doall
-             (map-indexed (fn [idx2 color-child]
-                            (paint-rectangle!
-                             bi
-                             color-child
-                             new-rect-size
-                             stroke-size
-                             idx2
-                             (+ parent-indent middle-position)
-                             (/ new-rect-size 2)))
-                          color)))))
-
-                  data))
+    (doall (map-indexed (paint-all! bi rect-size stroke-size) data))
     (show bi :zoom 1.0 :title title)
     (save bi (str working-dir "/" title ".png"))))
 
@@ -135,8 +136,9 @@
 (example->color
  {:fn clojure.core/partition
   :args [3
-         (hues 25 10 highlight-color)]})
+         (partition 2 (hues 25 10 highlight-color))]})
 
+(partition 3 (partition 2 (hues 25 10 highlight-color)))
 
 ;;Get shorter
 ;;;distinct filter remove take-nth for
