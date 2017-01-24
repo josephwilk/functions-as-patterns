@@ -1,11 +1,24 @@
 ## Functions as Color
 
+Exploring patterns as a means of understanding and documenting functions.
+
+### Example:
+
 ```clojure
 (require 'functions-as-color.core :refer :all)
 
 (view
  (partition 2 (partition 3 (hues 10))))
 ```
+
+__Arg:__
+
+![Argument](https://raw.githubusercontent.com/josephwilk/functions-as-color/master/doc/clojure.core%24partition_arg1.png)
+
+__Result:__
+
+![Result](https://raw.githubusercontent.com/josephwilk/functions-as-color/master/doc/clojure.core%24partition_post.png)
+
 
 # License
 
