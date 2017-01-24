@@ -9,13 +9,17 @@
 
 (def darker-highlight-color (colors/adjust-hue (colors/create-color "#3A396C") -35))
 
-
 (def rgb-blank-color     (colors/rgba-int blank-color))
 (def rgb-highlight-color (colors/rgba-int highlight-color))
 (def rgb-darker-highlight-color (colors/rgba-int darker-highlight-color))
 (def rgb-stroke-color    (colors/rgba-int stroke-color))
 
 (def working-dir "/Users/josephwilk/Desktop/clojure_functions")
+
+(defn container-color [depth]
+  (-> blank-color
+      (colors/adjust-hue (* depth -50))
+      colors/rgba-int))
 
 (defn no-of-leaf-nodes [[head & tail]]
   (cond
@@ -49,24 +53,26 @@
 (defn leaf? [node] (not (sequential? node)))
 (defn children? [node] (sequential? node))
 
-(defn paint-rectangle! [img color rect-size stroke-size x-pos y-pos x-offset y-offset]
+(defn paint-rectangle! [img color rect-size stroke-size x-pos depth x-offset y-offset]
   (if (leaf? color)
     (paint-stroked-rectangle! img color
-                              (+ x-offset (* rect-size x-pos)) (* y-pos y-offset)
+                              (+ x-offset (* rect-size x-pos)) (* depth y-offset)
                               rect-size                         rect-size
                               stroke-size)
     (let [width (* (no-of-leaf-nodes color) rect-size) ]
-      (paint-stroked-rectangle! img (rand-colour)
-                                (+ x-offset (* width x-pos)) (* y-pos y-offset)
+      (paint-stroked-rectangle! img (container-color depth)
+                                (+ x-offset (* width x-pos)) (* depth y-offset)
                                 width rect-size
                                 stroke-size))))
+
+
 
 (defn paint-all! [img rect-size stroke-size x-offset y-offset depth]
   (fn [idx color]
     (let [rect-new-size (if (= 0 depth) rect-size (/ rect-size (* depth 2)))]
       (paint-rectangle! img color rect-new-size stroke-size idx depth x-offset y-offset)
-      (when (children? color)
 
+      (when (children? color)
         (let [no-children     (no-of-leaf-nodes color)
               new-rect-size   (/ rect-size (* (inc depth) 2))
               parent-indent   (* idx no-children rect-new-size)
@@ -121,57 +127,28 @@
            (apply fn-to-doc args)
            args)))
 
-(comment
-  (example->color
-   {:fn clojure.core/interpose
-    :args [rgb-highlight-color
-           (take 8 (cycle [rgb-blank-color]))]})
+(defmacro view [[fn-to-view & args]]
+  (let  [v (vec args)]
+    `(example->color
+      {:fn ~fn-to-view :args ~v})))
 
-  (example->color
-   {:fn clojure.core/interleave
-    :args [(hues 30 2 highlight-color)
-           (take 8 (cycle [blank-color]))]})
+(view
+ (interpose rgb-highlight-color (take 8 (cycle [rgb-blank-color]))))
 
-  (example->color
-   {:fn clojure.core/nthrest
-    :args [(hues 25 10 highlight-color)
-           4]})
+(view
+ (interleave (hues 30 2 highlight-color) (take 8 (cycle [blank-color]))))
 
-  (example->color
-   {:fn clojure.core/shuffle
-    :args [(hues 25 10 highlight-color)]})
+(view
+ (nthrest (hues 25 10 highlight-color) 4))
 
-  (example->color
-   {:fn  clojure.core/replace
-    :args [(vec (hues 25 10 highlight-color))
-           [0 3 4 5]]})
+(view
+ (shuffle (hues 25 10 highlight-color)))
 
-  ;;nested lists patterns
-)
-(println " ")
-(println " ")
+(view
+ (replace (vec (hues 25 10 highlight-color)) [0 3 4 5]))
 
-(example->color
- {:fn clojure.core/partition
-  :args [3
-         (partition 2 (hues 25 10 highlight-color))]})
-
-(partition 3 (hues 25 10 highlight-color) )
-
-(partition 3 (partition 2 (hues 25 10 highlight-color)))
-
-;;1
-;;3
-;;2
-
-;;[   ]
-;; [ [1 2 3]        [1 2] ]
-
-
-;;(println (no-of-leaf-nodes [[[1 2 3] [1 2]]]))
-
-
-;;(partition 3 (partition 2 (hues 25 10 highlight-color)))
+(view
+ (partition 2 (partition 3 (hues 25 10 highlight-color))))
 
 
   ;;Get shorter
