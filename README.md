@@ -2,6 +2,9 @@
 
 Exploring patterns as a means of understanding and documenting functions.
 
+Inspired by the work of Alex McLean ([@yaxu](https://github.com/yaxu)) using visual patterns to explain the live coding language Tidal:
+[Tidal Pattern Language for Live Coding of Music](https://www.academia.edu/467099/TIDAL_PATTERN_LANGUAGE_FOR_LIVE_CODING_OF_MUSIC)
+
 ### Example:
 
 ```clojure
