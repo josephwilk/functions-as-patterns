@@ -16,17 +16,25 @@
 
 (def working-dir "/Users/josephwilk/Desktop/clojure_functions")
 
+(defn int->color [i]
+  (-> highlight-color
+      (colors/adjust-hue (* i -50))
+      colors/rgba-int))
+
 (defn container-color [depth]
   (-> blank-color
       (colors/adjust-hue (* depth -50))
       colors/rgba-int))
 
-(defn no-of-leaf-nodes [[head & tail]]
-  (cond
-    (and (not (seq? tail)) (nil? head))              0
-    (and (not (seq? tail)) (not (sequential? head))) 1
-    (and (seq? tail)       (not (sequential? head))) (+ 1 (no-of-leaf-nodes tail))
-    :else                                            (+ (no-of-leaf-nodes head) (no-of-leaf-nodes tail))))
+(defn flatten-all [coll]
+  (lazy-seq
+   (when-let [s (seq coll)]
+     (if (coll? (first s))
+       (concat (flatten (first s)) (flatten (rest s)))
+       (cons (first s) (flatten (rest s)))))))
+
+(defn no-of-leaf-nodes [seq]
+  (count (flatten-all seq)))
 
 (defn hues
   ([steps] (hues 25 steps highlight-color))
@@ -47,7 +55,8 @@
                 (colors/rgba-int stroke-color))
     (fill-rect! img
                 x y
-                w h color)))
+                w h
+                color)))
 
 (defn leaf?     [node] (not (sequential? node)))
 (defn children? [node] (sequential? node))
@@ -153,6 +162,13 @@
 
   ;;Get shorter
 ;;;distinct filter remove take-nth for
+
+(view (distinct (sort (concat (hues 5) (hues 5)))))
+(view (filter (fn [x] (= 0 (mod x 3))) (hues 10)))
+(view (remove (fn [x] (= 0 (mod x 3))) (hues 10)))
+(view (take-nth 3 (hues 10)))
+(view (take 10 (for [x (range 10) y (range 100) :while (< y x)] [(int->color x)
+                                                              (int->color y)])))
 
   ;;Get longer
 ;;;cons conj concat lazy-cat mapcat cycle interleave interpose
