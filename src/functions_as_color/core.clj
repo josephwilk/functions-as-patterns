@@ -17,6 +17,13 @@
 
 (def working-dir "/Users/josephwilk/Desktop/clojure_functions")
 
+(defn no-of-leaf-nodes [[head & tail]]
+  (cond
+    (and (not (seq? tail)) (nil? head))              0
+    (and (not (seq? tail)) (not (sequential? head))) 1
+    (and (seq? tail)       (not (sequential? head))) (+ 1 (no-of-leaf-nodes tail))
+    :else                                            (+ (no-of-leaf-nodes head) (no-of-leaf-nodes tail))))
+
 (defn hues
   ([steps] (hues steps 30 10))
   ([steps base] (hues steps base 100))
@@ -26,11 +33,11 @@
                      (colors/adjust-hue base hue-adjust)))
     (range 0 (* steps factor) steps))))
 
-(defn paint-stroked-rectangle! [img color posx posy rect-size stroke-size]
+(defn paint-stroked-rectangle! [img color posx posy rect-w rect-h stroke-size]
   (let [x (+ posx stroke-size)
         y (+ posy stroke-size)
-        w (- rect-size stroke-size)
-        h (- rect-size (* 2 stroke-size))]
+        w (- rect-w stroke-size)
+        h (- rect-h (* 2 stroke-size))]
     (fill-rect! img
                 posx posy
                 (+ w (* 2 stroke-size)) (+ (* 2 stroke-size) h)
@@ -42,28 +49,42 @@
 (defn leaf? [node] (not (sequential? node)))
 (defn children? [node] (sequential? node))
 
-(defn paint-rectangle! [img color rect-size stroke-size pos y-pos x-offset y-offset]
+(defn paint-rectangle! [img color rect-size stroke-size x-pos y-pos x-offset y-offset]
   (if (leaf? color)
-    (paint-stroked-rectangle! img color                      (+ x-offset (* rect-size pos))               (* y-pos y-offset) rect-size                   stroke-size)
-    (paint-stroked-rectangle! img rgb-darker-highlight-color (+ x-offset (* (count color) rect-size pos)) (* y-pos y-offset) (* (count color) rect-size) stroke-size)))
+    (paint-stroked-rectangle! img color
+                              (+ x-offset (* rect-size x-pos)) (* y-pos y-offset)
+                              rect-size                         rect-size
+                              stroke-size)
+    (let [width (* (no-of-leaf-nodes color) rect-size) ]
+      (paint-stroked-rectangle! img (rand-colour)
+                                (+ x-offset (* width x-pos)) (* y-pos y-offset)
+                                width rect-size
+                                stroke-size))))
 
-(defn paint-all! [img rect-size stroke-size x-offset y-offset y-pos]
+(defn paint-all! [img rect-size stroke-size x-offset y-offset depth]
   (fn [idx color]
-    (paint-rectangle! img color (/ rect-size (inc y-pos)) stroke-size idx y-pos x-offset y-offset)
+    (let [rect-new-size (if (= 0 depth) rect-size (/ rect-size (* depth 2)))]
+      (paint-rectangle! img color rect-new-size stroke-size idx depth x-offset y-offset)
+      (when (children? color)
 
-    (when (children? color)
-      (let [cells           (count color)
-            new-rect-size   (/ rect-size 2)
-            parent-indent   (* idx cells rect-size)
-            middle-position (/ (- (* rect-size cells) (* new-rect-size cells)) 2)]
-        (doall
-         (map-indexed
-          (paint-all! img rect-size stroke-size (+ parent-indent middle-position) (/ new-rect-size 2) (inc y-pos))
-          color))))))
+        (let [no-children     (no-of-leaf-nodes color)
+              new-rect-size   (/ rect-size (* (inc depth) 2))
+              parent-indent   (* idx no-children rect-new-size)
+              middle-position (/ (-
+                                  (+ (* 2 x-offset) (* rect-new-size no-children))
+                                  (* new-rect-size no-children))
+                                 2)]
+          (doall
+           (map-indexed
+            (paint-all! img rect-size stroke-size
+                        (+ parent-indent middle-position)
+                        (- new-rect-size (/ new-rect-size (* (inc depth) 2)))
+                        (inc depth))
+            color)))))))
 
 (defn render [data title]
   (let [rect-size 100
-        total-cells (count (flatten data))
+        total-cells  (no-of-leaf-nodes data)
         stroke-size 1
         bi (new-image (+ (* total-cells rect-size) stroke-size) rect-size)]
 
@@ -100,56 +121,77 @@
            (apply fn-to-doc args)
            args)))
 
-(example->color
- {:fn clojure.core/interpose
-  :args [rgb-highlight-color
-         (take 8 (cycle [rgb-blank-color]))]})
+(comment
+  (example->color
+   {:fn clojure.core/interpose
+    :args [rgb-highlight-color
+           (take 8 (cycle [rgb-blank-color]))]})
 
-(example->color
- {:fn clojure.core/interleave
-  :args [(hues 30 2 highlight-color)
-         (take 8 (cycle [blank-color]))]})
+  (example->color
+   {:fn clojure.core/interleave
+    :args [(hues 30 2 highlight-color)
+           (take 8 (cycle [blank-color]))]})
 
-(example->color
- {:fn clojure.core/nthrest
-  :args [(hues 25 10 highlight-color)
-         4]})
+  (example->color
+   {:fn clojure.core/nthrest
+    :args [(hues 25 10 highlight-color)
+           4]})
 
-(example->color
- {:fn clojure.core/shuffle
-  :args [(hues 25 10 highlight-color)]})
+  (example->color
+   {:fn clojure.core/shuffle
+    :args [(hues 25 10 highlight-color)]})
 
-(example->color
- {:fn  clojure.core/replace
-  :args [(vec (hues 25 10 highlight-color))
-         [0 3 4 5]]})
+  (example->color
+   {:fn  clojure.core/replace
+    :args [(vec (hues 25 10 highlight-color))
+           [0 3 4 5]]})
 
-;;nested lists patterns
+  ;;nested lists patterns
+)
+(println " ")
+(println " ")
+
 (example->color
  {:fn clojure.core/partition
   :args [3
          (partition 2 (hues 25 10 highlight-color))]})
 
+(partition 3 (hues 25 10 highlight-color) )
+
 (partition 3 (partition 2 (hues 25 10 highlight-color)))
 
-;;Get shorter
+;;1
+;;3
+;;2
+
+;;[   ]
+;; [ [1 2 3]        [1 2] ]
+
+
+;;(println (no-of-leaf-nodes [[[1 2 3] [1 2]]]))
+
+
+;;(partition 3 (partition 2 (hues 25 10 highlight-color)))
+
+
+  ;;Get shorter
 ;;;distinct filter remove take-nth for
 
-;;Get longer
+  ;;Get longer
 ;;;cons conj concat lazy-cat mapcat cycle interleave interpose
 
-;;Tail-items
+  ;;Tail-items
 ;;;rest nthrest next fnext nnext drop drop-while take-last for
 
-;;Head-items
+  ;;Head-items
 ;;;take take-while butlast drop-last for
 
-;;'Change'
+  ;;'Change'
 ;;;conj concat distinct flatten group-by partition partition-all partition-by split-at split-with filter
 ;;;remove replace shuffle
 
-;;Rearrange
+  ;;Rearrange
 ;;;reverse sort sort-by compare
 
-;;Process items
+  ;;Process items
 ;;;map pmap map-indexed mapcat for replace seque
