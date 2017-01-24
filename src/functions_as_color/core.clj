@@ -29,8 +29,7 @@
     :else                                            (+ (no-of-leaf-nodes head) (no-of-leaf-nodes tail))))
 
 (defn hues
-  ([steps] (hues steps 30 10))
-  ([steps base] (hues steps base 100))
+  ([steps] (hues 25 steps highlight-color))
   ([steps factor base]
    (map
     (fn [hue-adjust] (colors/rgba-int
@@ -50,7 +49,7 @@
                 x y
                 w h color)))
 
-(defn leaf? [node] (not (sequential? node)))
+(defn leaf?     [node] (not (sequential? node)))
 (defn children? [node] (sequential? node))
 
 (defn paint-rectangle! [img color rect-size stroke-size x-pos depth x-offset y-offset]
@@ -64,8 +63,6 @@
                                 (+ x-offset (* width x-pos)) (* depth y-offset)
                                 width rect-size
                                 stroke-size))))
-
-
 
 (defn paint-all! [img rect-size stroke-size x-offset y-offset depth]
   (fn [idx color]
@@ -139,16 +136,17 @@
  (interleave (hues 30 2 highlight-color) (take 8 (cycle [blank-color]))))
 
 (view
- (nthrest (hues 25 10 highlight-color) 4))
+ (nthrest (hues 10) 4))
 
 (view
- (shuffle (hues 25 10 highlight-color)))
+ (shuffle (hues 10)))
 
 (view
- (replace (vec (hues 25 10 highlight-color)) [0 3 4 5]))
+ (replace (vec (hues 10)) [0 3 4 5]))
 
 (view
  (partition 2 (partition 3 (hues 25 10 highlight-color))))
+
 
 
   ;;Get shorter
