@@ -114,7 +114,9 @@
          out (map color->rgba out)
          ]
      (dotimes [i (count args)]
-       (render (nth args i)  (str name "_arg" i)))
+       (try
+         (render (nth args i)  (str name "_arg" i))
+         (catch Exception e (println "Unable to render:" (nth args i)))))
      (render out (str name "_post")))))
 
 (defn example->color [{fn-to-doc :fn args :args}]
