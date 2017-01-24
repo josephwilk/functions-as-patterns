@@ -1,4 +1,4 @@
-## Functions as Color
+# Functions as Color :rainbow:
 
 Exploring patterns as a means of understanding and documenting functions.
 
