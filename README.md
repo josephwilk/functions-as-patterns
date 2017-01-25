@@ -1,4 +1,4 @@
-# Functions as Color :rainbow:
+## Functions as patterns :rainbow:
 
 Exploring patterns as a means of understanding and documenting functions.
 
@@ -8,7 +8,7 @@ Inspired by the work of Alex McLean ([@yaxu](https://github.com/yaxu)) using vis
 ### Example:
 
 ```clojure
-(require 'functions-as-color.core :refer :all)
+(require 'functions-as-patterns.core :refer :all)
 
 (view
  (partition 2 (partition 3 (hues 10))))
@@ -16,11 +16,11 @@ Inspired by the work of Alex McLean ([@yaxu](https://github.com/yaxu)) using vis
 
 __Arg:__
 
-![Argument](https://raw.githubusercontent.com/josephwilk/functions-as-color/master/doc/clojure.core%24partition_arg1.png)
+![Argument](https://raw.githubusercontent.com/josephwilk/functions-as-patterns/master/doc/clojure.core%24partition_arg1.png)
 
 __Result:__
 
-![Result](https://raw.githubusercontent.com/josephwilk/functions-as-color/master/doc/clojure.core%24partition_post.png)
+![Result](https://raw.githubusercontent.com/josephwilk/functions-as-patterns/master/doc/clojure.core%24partition_post.png)
 
 
 # License
