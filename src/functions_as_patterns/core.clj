@@ -1,4 +1,4 @@
-(ns functions-as-color.core
+(ns functions-as-patterns.core
   (require [mikera.image.core :refer :all]
            [mikera.image.colours :refer :all]
            [com.evocomputing.colors :as colors]))
@@ -30,19 +30,25 @@
   (lazy-seq
    (when-let [s (seq coll)]
      (if (coll? (first s))
-       (concat (flatten (first s)) (flatten (rest s)))
-       (cons (first s) (flatten (rest s)))))))
+       (concat (flatten (first s)) (flatten-all (rest s)))
+       (cons (first s) (flatten-all (rest s)))))))
 
 (defn no-of-leaf-nodes [seq]
   (count (flatten-all seq)))
 
 (defn hues
   ([steps] (hues 25 steps highlight-color))
+  ([steps factor] (hues factor steps highlight-color))
   ([steps factor base]
-   (map
-    (fn [hue-adjust] (colors/rgba-int
-                     (colors/adjust-hue base hue-adjust)))
-    (range 0 (* steps factor) steps))))
+   (-> (map
+        (fn [hue-adjust] (colors/rgba-int
+                         (colors/adjust-hue base hue-adjust)))
+        (range 0 (* steps factor) steps))
+       vec)))
+
+(defn color-seq
+  ([n] (color-seq n rgb-blank-color))
+  ([n color] (take n (cycle [color]))))
 
 (defn paint-stroked-rectangle! [img color posx posy rect-w rect-h stroke-size]
   (let [x (+ posx stroke-size)
@@ -139,52 +145,3 @@
   (let  [v (vec args)]
     `(example->color
       {:fn ~fn-to-view :args ~v})))
-
-(view
- (interpose rgb-highlight-color (take 8 (cycle [rgb-blank-color]))))
-
-(view
- (interleave (hues 30 2 highlight-color) (take 8 (cycle [blank-color]))))
-
-(view
- (nthrest (hues 10) 4))
-
-(view
- (shuffle (hues 10)))
-
-(view
- (replace (vec (hues 10)) [0 3 4 5]))
-
-(view
- (partition 2 (partition 3 (hues 25 10 highlight-color))))
-
-
-
-  ;;Get shorter
-;;;distinct filter remove take-nth for
-
-(view (distinct (sort (concat (hues 5) (hues 5)))))
-(view (filter (fn [x] (= 0 (mod x 3))) (hues 10)))
-(view (remove (fn [x] (= 0 (mod x 3))) (hues 10)))
-(view (take-nth 3 (hues 10)))
-(view (take 10 (for [x (range 10) y (range 100) :while (< y x)] [(int->color x)
-                                                              (int->color y)])))
-
-  ;;Get longer
-;;;cons conj concat lazy-cat mapcat cycle interleave interpose
-
-  ;;Tail-items
-;;;rest nthrest next fnext nnext drop drop-while take-last for
-
-  ;;Head-items
-;;;take take-while butlast drop-last for
-
-  ;;'Change'
-;;;conj concat distinct flatten group-by partition partition-all partition-by split-at split-with filter
-;;;remove replace shuffle
-
-  ;;Rearrange
-;;;reverse sort sort-by compare
-
-  ;;Process items
-;;;map pmap map-indexed mapcat for replace seque
