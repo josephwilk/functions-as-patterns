@@ -20,6 +20,7 @@
 (view (cons   rgb-highlight-color (color-seq 3)))
 (view (conj   (color-seq 3)        rgb-highlight-color))
 (view (concat (color-seq 3) (color-seq 3 rgb-highlight-color)))
+
 ;;fails (view (conj (hues 5) (hues 5)))
 ;;fails (view (lazy-cat (color-seq 3) (color-seq 3 rgb-highlight-color)))
 
@@ -37,15 +38,26 @@
 ;;;take take-while butlast drop-last for
 
 ;;Change
-;;;conj concat distinct flatten group-by partition partition-all partition-by split-at split-with filter
+;;;flatten group-by partition partition-all partition-by split-at split-with filter
 ;;;remove replace shuffle
 
 (view (shuffle (interpose rgb-highlight-color (color-seq 5))))
 (view (replace (hues 10) [0 3 4 5]))
 (view (partition 2 (hues 10)))
+(view (flatten (partition 2 (hues 10))))
+(view (flatten (partition 1 (partition 2 (hues 10)))))
+
+;;(view (group-by  (hues 10)))
+
+;;Rendering fun :)
+(view (partition-all 2 (partition 3 (hues 10))))
 
 ;;Rearrange
 ;;;reverse sort sort-by compare
+
+(view (reverse (hues 4 30)))
+(view (sort (shuffle (hues 6 15))))
+;; rearrange? (view (compare [1 2] [2 3 4]))
 
 ;;Process items
 ;;;map pmap map-indexed mapcat for replace seque

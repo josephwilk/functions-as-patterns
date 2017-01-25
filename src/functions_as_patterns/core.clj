@@ -6,6 +6,7 @@
 (def blank-color     (colors/create-color "#3A396C"))
 (def highlight-color (colors/create-color "#EE5C96"))
 (def stroke-color    (colors/create-color "#111111"))
+(def text-color (colors/create-color "#ffffff"))
 
 (def darker-highlight-color (colors/adjust-hue (colors/create-color "#3A396C") -35))
 
@@ -13,8 +14,10 @@
 (def rgb-highlight-color (colors/rgba-int highlight-color))
 (def rgb-darker-highlight-color (colors/rgba-int darker-highlight-color))
 (def rgb-stroke-color    (colors/rgba-int stroke-color))
+(def rgb-text-color (colors/rgba-int text-color))
 
 (def working-dir "/Users/josephwilk/Desktop/clojure_functions")
+
 
 (defn int->color [i]
   (-> highlight-color
@@ -50,19 +53,35 @@
   ([n] (color-seq n rgb-blank-color))
   ([n color] (take n (cycle [color]))))
 
+(defn fill-round-rect!
+  ([image x y w h colour]
+   (let [g (graphics image)
+         ^Color colour (to-java-color colour)]
+     (.setColor g colour)
+     (.fillRect g (int x) (int y) (int w) (int h))
+     image)))
+
+(defn draw-chars! [image text x y w h colour]
+  (let [g (graphics image)
+        ^Color colour (to-java-color colour)]
+    (.setColor g colour)
+    (.drawChars g (char-array text) 0 (count (char-array text)) (int (+ (/ (- w (* 5 (count (char-array text))) ) 2) x)) (int (+ (/ h 2) y)))
+    image))
+
 (defn paint-stroked-rectangle! [img color posx posy rect-w rect-h stroke-size]
   (let [x (+ posx stroke-size)
         y (+ posy stroke-size)
         w (- rect-w stroke-size)
         h (- rect-h (* 2 stroke-size))]
-    (fill-rect! img
+    (fill-round-rect! img
                 posx posy
                 (+ w (* 2 stroke-size)) (+ (* 2 stroke-size) h)
-                (colors/rgba-int stroke-color))
-    (fill-rect! img
+                rgb-stroke-color)
+    (fill-round-rect! img
                 x y
                 w h
-                color)))
+                color)
+    (draw-chars! img (str posx) x y w h rgb-text-color)))
 
 (defn leaf?     [node] (not (sequential? node)))
 (defn children? [node] (sequential? node))
@@ -145,3 +164,7 @@
   (let  [v (vec args)]
     `(example->color
       {:fn ~fn-to-view :args ~v})))
+
+(comment
+  (view (partition-all 3 (hues 10)))
+  )
