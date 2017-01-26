@@ -86,37 +86,53 @@
 (defn leaf?     [node] (not (sequential? node)))
 (defn children? [node] (sequential? node))
 
-(defn paint-rectangle! [img color rect-size stroke-size x-pos depth x-offset y-offset]
+(defn paint-rectangle! [img color rect-size stroke-size x-pos depth x-offset y-offset offset]
   (if (leaf? color)
     (paint-stroked-rectangle! img color
                               (+ x-offset (* rect-size x-pos)) (* depth y-offset)
                               rect-size                         rect-size
                               stroke-size)
-    (let [width (* (no-of-leaf-nodes color) rect-size) ]
-      (paint-stroked-rectangle! img (container-color depth)
-                                (+ x-offset (* width x-pos)) (* depth y-offset)
+    (let [width (* (no-of-leaf-nodes color) rect-size)]
+      (paint-stroked-rectangle! img (rand-colour)
+                                offset
+                                (* depth y-offset)
                                 width rect-size
                                 stroke-size))))
 
-(defn paint-all! [img rect-size stroke-size x-offset y-offset depth]
+(defn find-x-offset [data idx rect-size]
+  (reduce
+   (fn [acc [c idx]]
+     (+
+      acc
+      (* (no-of-leaf-nodes c) rect-size)))
+   0
+   (map vector (take idx data))))
+
+(defn paint-all! [data img rect-size stroke-size x-offset y-offset depth]
   (fn [idx color]
-    (let [rect-new-size (if (= 0 depth) rect-size (/ rect-size (* depth 2)))]
-      (paint-rectangle! img color rect-new-size stroke-size idx depth x-offset y-offset)
+    (let [rect-new-size (if (= 0 depth) rect-size (/ rect-size (* depth 2)))
+          x-pos         (find-x-offset data idx rect-size)]
+
+      (paint-rectangle! img color rect-new-size stroke-size
+                        idx depth
+                        x-offset y-offset x-pos)
 
       (when (children? color)
         (let [no-children     (no-of-leaf-nodes color)
               new-rect-size   (/ rect-size (* (inc depth) 2))
-              parent-indent   (* idx no-children rect-new-size)
+              parent-indent   x-pos
               middle-position (/ (-
-                                  (+ (* 2 x-offset) (* rect-new-size no-children))
-                                  (* new-rect-size no-children))
+                                    (+ (* 2 x-offset) (* rect-new-size no-children))
+                                    (* new-rect-size no-children))
                                  2)]
           (doall
            (map-indexed
-            (paint-all! img rect-size stroke-size
-                        (+ parent-indent middle-position)
-                        (- new-rect-size (/ new-rect-size (* (inc depth) 2)))
-                        (inc depth))
+            (paint-all!
+             data
+             img rect-size stroke-size
+             (+ parent-indent middle-position)
+             (- new-rect-size (/ new-rect-size (* (inc depth) 2)))
+             (inc depth))
             color)))))))
 
 (defn render [data title]
@@ -125,8 +141,9 @@
         stroke-size 1
         bi (new-image (+ (* total-cells rect-size) stroke-size) rect-size)]
 
+    (reset! xx-offset 0)
     (fill! bi (colors/rgba-int stroke-color))
-    (doall (map-indexed (paint-all! bi rect-size stroke-size 0 0 0) data))
+    (doall (map-indexed (paint-all! data bi rect-size stroke-size 0 0 0) data))
     (show bi :zoom 1.0 :title title)
     (save bi (str working-dir "/" title ".png"))))
 
@@ -165,6 +182,7 @@
     `(example->color
       {:fn ~fn-to-view :args ~v})))
 
-(comment
-  (view (partition-all 3 (hues 10)))
-  )
+
+(view (partition 3 (hues 10)))
+(view
+ (partition-all 3 (hues 10)))
