@@ -3,7 +3,7 @@
            [mikera.image.colours :refer :all]
            [com.evocomputing.colors :as colors]))
 
-(def blank-color     (colors/create-color "#3A396C"))
+(def blank-color     (colors/create-color "#663477"))
 (def highlight-color (colors/create-color "#EE5C96"))
 (def stroke-color    (colors/create-color "#111111"))
 (def text-color (colors/create-color "#ffffff"))
@@ -18,7 +18,6 @@
 
 (def working-dir "/Users/josephwilk/Desktop/clojure_functions")
 
-
 (defn int->color [i]
   (-> highlight-color
       (colors/adjust-hue (* i -50))
@@ -26,7 +25,7 @@
 
 (defn container-color [depth]
   (-> blank-color
-      (colors/adjust-hue (* depth -50))
+      (colors/adjust-hue (* depth -30))
       colors/rgba-int))
 
 (defn flatten-all [coll]
@@ -36,8 +35,10 @@
        (concat (flatten (first s)) (flatten-all (rest s)))
        (cons (first s) (flatten-all (rest s)))))))
 
-(defn no-of-leaf-nodes [seq]
-  (count (flatten-all seq)))
+(defn no-of-leaf-nodes [col]
+  (if (sequential? col)
+    (count (flatten-all col))
+    0))
 
 (defn hues
   ([steps] (hues 25 steps highlight-color))
@@ -93,47 +94,40 @@
                               rect-size                         rect-size
                               stroke-size)
     (let [width (* (no-of-leaf-nodes color) rect-size)]
-      (paint-stroked-rectangle! img (rand-colour)
-                                offset
+      (paint-stroked-rectangle! img (container-color (* 2 depth))
+                                (+ x-offset offset)
                                 (* depth y-offset)
-                                width rect-size
+                                width (+ rect-size)
                                 stroke-size))))
 
-(defn find-x-offset [data idx rect-size]
-  (reduce
-   (fn [acc [c idx]]
-     (+
-      acc
-      (* (no-of-leaf-nodes c) rect-size)))
-   0
-   (map vector (take idx data))))
+(defn paint-all! [img rect-size stroke-size x-offset y-offset depth]
+  (fn [parent-indent [idx color]]
 
-(defn paint-all! [data img rect-size stroke-size x-offset y-offset depth]
-  (fn [idx color]
-    (let [rect-new-size (if (= 0 depth) rect-size (/ rect-size (* depth 2)))
-          x-pos         (find-x-offset data idx rect-size)]
-
+    (let [previous-rect (if (<= (dec depth) 0) rect-size (/ rect-size (* (dec depth) 2)))
+          rect-new-size (if (= 0 depth) rect-size (/ rect-size (* depth 2)))]
+      (println "[paint-all!]: " :acc parent-indent :idx idx :color color :depth depth :new-rec rect-new-size)
       (paint-rectangle! img color rect-new-size stroke-size
                         idx depth
-                        x-offset y-offset x-pos)
+                        x-offset y-offset parent-indent)
 
-      (when (children? color)
+      (if (children? color)
         (let [no-children     (no-of-leaf-nodes color)
               new-rect-size   (/ rect-size (* (inc depth) 2))
-              parent-indent   x-pos
-              middle-position (/ (-
-                                    (+ (* 2 x-offset) (* rect-new-size no-children))
-                                    (* new-rect-size no-children))
-                                 2)]
-          (doall
-           (map-indexed
-            (paint-all!
-             data
-             img rect-size stroke-size
-             (+ parent-indent middle-position)
-             (- new-rect-size (/ new-rect-size (* (inc depth) 2)))
-             (inc depth))
-            color)))))))
+              middle-position 0
+              _ (comment (/ (-
+                                           (+ (* 2 x-offset) (* rect-new-size no-children))
+                                           (* new-rect-size no-children))
+                                          2))]
+          (reduce
+           (paint-all!
+            img rect-size stroke-size
+            (+ parent-indent middle-position)
+            (- new-rect-size (/ new-rect-size (* (inc depth) 2)))
+            (inc depth))
+           parent-indent
+           (map vector (range) color)))
+        (+ parent-indent previous-rect)
+        ))))
 
 (defn render [data title]
   (let [rect-size 100
@@ -141,9 +135,10 @@
         stroke-size 1
         bi (new-image (+ (* total-cells rect-size) stroke-size) rect-size)]
 
-    (reset! xx-offset 0)
     (fill! bi (colors/rgba-int stroke-color))
-    (doall (map-indexed (paint-all! data bi rect-size stroke-size 0 0 0) data))
+    (reduce (paint-all! bi rect-size stroke-size 0 0 0)
+            0
+            (map vector (range) data))
     (show bi :zoom 1.0 :title title)
     (save bi (str working-dir "/" title ".png"))))
 
@@ -168,7 +163,8 @@
        (try
          (render (nth args i)  (str name "_arg" i))
          (catch Exception e (println "Unable to render:" (nth args i)))))
-     (render out (str name "_post")))))
+     (render out (str name "_post"))
+     )))
 
 (defn example->color [{fn-to-doc :fn args :args}]
   (let [args (vec args)]
@@ -182,7 +178,7 @@
     `(example->color
       {:fn ~fn-to-view :args ~v})))
 
-
-(view (partition 3 (hues 10)))
-(view
- (partition-all 3 (hues 10)))
+(comment
+  ;;Troublesome Examples
+  (view (identity [[[(rand-colour)]]  [(rand-colour) (rand-colour)]]))
+)
