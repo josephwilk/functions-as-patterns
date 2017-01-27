@@ -105,7 +105,7 @@
 
     (let [previous-rect (if (<= (dec depth) 0) rect-size (/ rect-size (* (dec depth) 2)))
           rect-new-size (if (= 0 depth) rect-size (/ rect-size (* depth 2)))]
-      (println "[paint-all!]: " :acc parent-indent :idx idx :color color :depth depth :new-rec rect-new-size)
+      (println "[paint-all!]: " :acc parent-indent :idx idx :depth depth :color color  :new-rec rect-new-size)
       (paint-rectangle! img color rect-new-size stroke-size
                         idx depth
                         x-offset y-offset parent-indent)
@@ -113,11 +113,10 @@
       (if (children? color)
         (let [no-children     (no-of-leaf-nodes color)
               new-rect-size   (/ rect-size (* (inc depth) 2))
-              middle-position 0
-              _ (comment (/ (-
-                                           (+ (* 2 x-offset) (* rect-new-size no-children))
-                                           (* new-rect-size no-children))
-                                          2))]
+              middle-position  (/ (-
+                                   (+ (* 2 x-offset) (* rect-new-size no-children))
+                                   (* new-rect-size no-children))
+                                  2)]
           (reduce
            (paint-all!
             img rect-size stroke-size
@@ -126,7 +125,7 @@
             (inc depth))
            parent-indent
            (map vector (range) color)))
-        (+ parent-indent previous-rect)
+        (+ parent-indent rect-size)
         ))))
 
 (defn render [data title]
@@ -179,6 +178,12 @@
       {:fn ~fn-to-view :args ~v})))
 
 (comment
-  ;;Troublesome Examples
+  ;Troublesome Examples
+
+  ;;;Misses second box!
+  (view (identity [[[(rand-colour)]]  [[(rand-colour)]]]))
+
+  ;;Behaving
+  (view (partition-all 3 (partition 2 (hues 10))))
   (view (identity [[[(rand-colour)]]  [(rand-colour) (rand-colour)]]))
 )
