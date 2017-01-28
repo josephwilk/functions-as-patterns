@@ -91,17 +91,17 @@
 (defn paint-rectangle! [img color rect-size depth x-offset y-offset]
   (if (leaf? color)
     (paint-stroked-rectangle! img color
-                              x-offset   (* depth y-offset)
+                              x-offset   (/ (* depth y-offset) 2)
                               rect-size   rect-size)
     (let [width (* (no-of-leaf-nodes color) rect-size)]
-      (paint-stroked-rectangle! img (container-color (* 2 depth))
+      (paint-stroked-rectangle! img (container-color depth)
                                 x-offset
                                 (* depth y-offset)
                                 width (+ rect-size)))))
 
 (defn paint-all! [img rect-size x-offset y-offset depth]
   (fn [parent-indent [idx color]]
-    (when (children? color) (println "[paint-all!]: " :indent parent-indent :size rect-size ))
+    (println "[paint-all!]: " :indent parent-indent :size rect-size color)
     (paint-rectangle! img color rect-size
                       depth
                       parent-indent y-offset)
@@ -114,20 +114,28 @@
                            (+ (* 2 x-offset) (* rect-new-size no-children))
                            (* new-rect-size no-children))
                           2))]
-        (reduce
-         (paint-all!
-          img
-          (/ rect-size 2)
-          (+ parent-indent middle-position)
-          0
-          (inc depth))
-         parent-indent
-         (map vector (range) color)))
+        (+
+         (/ rect-size 2) ;;the indent
+         (reduce
+            (paint-all!
+             img
+             (/ rect-size 2)
+             (+ parent-indent middle-position)
+             (/ rect-size 2)
+             (inc depth))
+            parent-indent
+            (map vector (range) color))))
       (+ parent-indent rect-size)
       )))
 
+(view (identity [[(rand-colour)] [(rand-colour) (rand-colour)]]))
+
+;;bad y
+(view (identity [[[[(rand-colour)]]]]))
+
 (comment
-  (view (identity [[(rand-colour)] [(rand-colour) (rand-colour)]]))
+
+
   (view (identity [[(rand-colour) (rand-colour) (rand-colour)]]))
   (view (identity [(rand-colour)]))
   (view (identity [[(rand-colour)]]))
