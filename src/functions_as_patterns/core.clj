@@ -69,8 +69,9 @@
     (.drawChars g (char-array text) 0 (count (char-array text)) (int (+ (/ (- w (* 5 (count (char-array text))) ) 2) x)) (int (+ (/ h 2) y)))
     image))
 
-(defn paint-stroked-rectangle! [img color posx posy rect-w rect-h stroke-size]
-  (let [x (+ posx stroke-size)
+(defn paint-stroked-rectangle! [img color posx posy rect-w rect-h]
+  (let [stroke-size 1
+        x (+ posx stroke-size)
         y (+ posy stroke-size)
         w (- rect-w stroke-size)
         h (- rect-h (* 2 stroke-size))]
@@ -87,55 +88,62 @@
 (defn leaf?     [node] (not (sequential? node)))
 (defn children? [node] (sequential? node))
 
-(defn paint-rectangle! [img color rect-size stroke-size x-pos depth x-offset y-offset offset]
+(defn paint-rectangle! [img color rect-size depth x-offset y-offset]
   (if (leaf? color)
     (paint-stroked-rectangle! img color
-                              (+ x-offset (* rect-size x-pos)) (* depth y-offset)
-                              rect-size                         rect-size
-                              stroke-size)
+                              x-offset   (* depth y-offset)
+                              rect-size   rect-size)
     (let [width (* (no-of-leaf-nodes color) rect-size)]
       (paint-stroked-rectangle! img (container-color (* 2 depth))
-                                (+ x-offset offset)
+                                x-offset
                                 (* depth y-offset)
-                                width (+ rect-size)
-                                stroke-size))))
+                                width (+ rect-size)))))
 
-(defn paint-all! [img rect-size stroke-size x-offset y-offset depth]
+(defn paint-all! [img rect-size x-offset y-offset depth]
   (fn [parent-indent [idx color]]
+    (when (children? color) (println "[paint-all!]: " :indent parent-indent :size rect-size ))
+    (paint-rectangle! img color rect-size
+                      depth
+                      parent-indent y-offset)
 
-    (let [previous-rect (if (<= (dec depth) 0) rect-size (/ rect-size (* (dec depth) 2)))
-          rect-new-size (if (= 0 depth) rect-size (/ rect-size (* depth 2)))]
-      (println "[paint-all!]: " :acc parent-indent :idx idx :depth depth :color color  :new-rec rect-new-size)
-      (paint-rectangle! img color rect-new-size stroke-size
-                        idx depth
-                        x-offset y-offset parent-indent)
+    (if (children? color)
+      (let [no-children     (no-of-leaf-nodes color)
+            new-rect-size   (/ rect-size 2)
+            middle-position 0
+            _ (comment (/ (-
+                           (+ (* 2 x-offset) (* rect-new-size no-children))
+                           (* new-rect-size no-children))
+                          2))]
+        (reduce
+         (paint-all!
+          img
+          (/ rect-size 2)
+          (+ parent-indent middle-position)
+          0
+          (inc depth))
+         parent-indent
+         (map vector (range) color)))
+      (+ parent-indent rect-size)
+      )))
 
-      (if (children? color)
-        (let [no-children     (no-of-leaf-nodes color)
-              new-rect-size   (/ rect-size (* (inc depth) 2))
-              middle-position  (/ (-
-                                   (+ (* 2 x-offset) (* rect-new-size no-children))
-                                   (* new-rect-size no-children))
-                                  2)]
-          (reduce
-           (paint-all!
-            img rect-size stroke-size
-            (+ parent-indent middle-position)
-            (- new-rect-size (/ new-rect-size (* (inc depth) 2)))
-            (inc depth))
-           parent-indent
-           (map vector (range) color)))
-        (+ parent-indent rect-size)
-        ))))
+(comment
+  (view (identity [[(rand-colour)] [(rand-colour) (rand-colour)]]))
+  (view (identity [[(rand-colour) (rand-colour) (rand-colour)]]))
+  (view (identity [(rand-colour)]))
+  (view (identity [[(rand-colour)]]))
+  (view (identity [[[(rand-colour)]]]))
+  (view (identity [[[[(rand-colour)]]]]))
+  )
+
 
 (defn render [data title]
   (let [rect-size 100
         total-cells  (no-of-leaf-nodes data)
         stroke-size 1
-        bi (new-image (+ (* total-cells rect-size) stroke-size) rect-size)]
+        bi (new-image (+ (* 2 total-cells rect-size) stroke-size) (* 2 rect-size))]
 
     (fill! bi (colors/rgba-int stroke-color))
-    (reduce (paint-all! bi rect-size stroke-size 0 0 0)
+    (reduce (paint-all! bi rect-size  0 0 0)
             0
             (map vector (range) data))
     (show bi :zoom 1.0 :title title)
@@ -177,13 +185,19 @@
     `(example->color
       {:fn ~fn-to-view :args ~v})))
 
-(comment
-  ;Troublesome Examples
 
+
+
+;;(view (identity [(rand-colour) (rand-colour) (rand-colour)]))
+
+
+                                        ;Troublesome Examples
+(comment
   ;;;Misses second box!
   (view (identity [[[(rand-colour)]]  [[(rand-colour)]]]))
 
+  (view (partition-all 3  (hues 10)))
+
   ;;Behaving
-  (view (partition-all 3 (partition 2 (hues 10))))
-  (view (identity [[[(rand-colour)]]  [(rand-colour) (rand-colour)]]))
-)
+  (view (partition-all 3 (partition 2 (hues 11))))
+  (view (identity [[[(rand-colour)]]  [(rand-colour) (rand-colour)]])))
