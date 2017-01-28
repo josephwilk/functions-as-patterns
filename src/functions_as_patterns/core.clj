@@ -89,15 +89,16 @@
 (defn children? [node] (sequential? node))
 
 (defn paint-rectangle! [img color rect-size depth x-offset y-offset]
-  (if (leaf? color)
-    (paint-stroked-rectangle! img color
-                              x-offset   (/ (* depth y-offset) 2)
-                              rect-size   rect-size)
-    (let [width (* (no-of-leaf-nodes color) rect-size)]
-      (paint-stroked-rectangle! img (container-color depth)
-                                x-offset
-                                (* depth y-offset)
-                                width (+ rect-size)))))
+  (let [start-rect-size 100]
+    (if (leaf? color)
+      (paint-stroked-rectangle! img color
+                                x-offset   (/ (- start-rect-size rect-size) 2)
+                                rect-size   rect-size)
+      (let [width (* (no-of-leaf-nodes color) rect-size)]
+        (paint-stroked-rectangle! img (container-color depth)
+                                  x-offset
+                                  (/ (- start-rect-size rect-size) 2)
+                                  width rect-size)))))
 
 (defn paint-all! [img rect-size x-offset y-offset depth]
   (fn [parent-indent [idx color]]
@@ -115,7 +116,7 @@
                            (* new-rect-size no-children))
                           2))]
         (+
-         (/ rect-size 2) ;;the indent
+         (/ rect-size 2) ;;The indent spacing
          (reduce
             (paint-all!
              img
@@ -128,14 +129,9 @@
       (+ parent-indent rect-size)
       )))
 
-(view (identity [[(rand-colour)] [(rand-colour) (rand-colour)]]))
-
-;;bad y
-(view (identity [[[[(rand-colour)]]]]))
-
 (comment
-
-
+  (view (identity [[(rand-colour)] [(rand-colour) (rand-colour)]]))
+  (view (identity [[[[(rand-colour)]]]]))
   (view (identity [[(rand-colour) (rand-colour) (rand-colour)]]))
   (view (identity [(rand-colour)]))
   (view (identity [[(rand-colour)]]))
