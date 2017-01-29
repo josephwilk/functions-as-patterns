@@ -119,19 +119,7 @@
       (+ parent-indent rect-size)
       )))
 
-(comment
-  (view (identity [[[(rand-colour) (rand-colour)]] [(rand-colour) (rand-colour)]]))
-  (view (identity [[(rand-colour)] [(rand-colour) (rand-colour)]]))
-  (view (identity [[(rand-colour) (rand-colour) (rand-colour)]]))
-  (view (identity [[[[(rand-colour)]]]]))
-  (view (identity [[(rand-colour) (rand-colour) (rand-colour)]]))
-  (view (identity [(rand-colour)]))
-  (view (identity [[(rand-colour)]]))
-  (view (identity [[[(rand-colour)]]]))
-  (view (identity [[[[(rand-colour)]]]]))
-  )
-
-(defn render [data dir title]
+(defn- render [data dir title]
   (let [rect-size rect-start
         total-cells  (no-of-leaf-nodes data)
         bi (new-image (+ (* total-cells rect-size) stroke-size) rect-size)]

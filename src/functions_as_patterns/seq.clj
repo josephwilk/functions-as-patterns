@@ -1,8 +1,9 @@
 (ns functions-as-patterns.seq
-  (:require [functions-as-patterns.core :refer :all]))
+  (:require
+   [functions-as-patterns.color :refer :all]
+   [functions-as-patterns.core :refer :all]))
 
 (def doc-dir (str (clojure.string/replace (:out (clojure.java.shell/sh "pwd")) "\n" "") "/doc/" ))
-(set-dir! doc-dir)
 
 ;;Get shorter
 ;;;distinct filter remove take-nth for
