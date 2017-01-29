@@ -85,7 +85,9 @@
                 x y
                 w h
                 color)
-    (draw-chars! img (str posx) x y w h rgb-text-color)))
+    (comment
+      ;; debug
+      (draw-chars! img (str posx) x y w h rgb-text-color))))
 
 (defn leaf?     [node] (not (sequential? node)))
 (defn children? [node] (sequential? node))
