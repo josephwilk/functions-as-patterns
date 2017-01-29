@@ -33,7 +33,7 @@ Add to your project.clj file:
 
 `3`
 
-with
+__with__
 
 ![Argument](https://raw.githubusercontent.com/josephwilk/functions-as-patterns/master/doc/clojure.core%24partition_arg1.png)
 
@@ -47,7 +47,7 @@ __Result__
 
 `3`
 
-with
+__with__
 
 ![Argument](https://raw.githubusercontent.com/josephwilk/functions-as-patterns/master/doc/clojure.core%24partition_all_arg1.png)
 
