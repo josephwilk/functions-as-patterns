@@ -46,7 +46,7 @@
 
 (view (shuffle (interpose rgb-highlight-color (color-seq 5))))
 (view (replace (hues 10) [0 3 4 5]))
-(view (partition 2 (hues 10)))
+(view (partition 3 (hues 10)))
 (view (flatten (partition 2 (hues 10))))
 (view (flatten (partition 1 (partition 2 (hues 10)))))
 

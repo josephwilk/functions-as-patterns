@@ -22,8 +22,18 @@ Add to your project.clj file:
 (set-dir! "/tmp/") 
 
 (view
- (partition 2 (partition 3 (hues 10))))
+ (partition 3 (hues 10))))
+
+(view
+ (partition-all 3 (hues 10))))
+
 ```
+
+`partition`
+
+`3`
+
+with
 
 __Arg:__
 
@@ -32,6 +42,23 @@ __Arg:__
 __Result:__
 
 ![Result](https://raw.githubusercontent.com/josephwilk/functions-as-patterns/master/doc/clojure.core%24partition_post.png)
+
+
+
+`partition-all`
+
+`3`
+
+with
+
+__Arg:__
+
+![Argument](https://raw.githubusercontent.com/josephwilk/functions-as-patterns/master/doc/clojure.core%24partition_all_arg1.png)
+
+__Result:__
+
+![Result](https://raw.githubusercontent.com/josephwilk/functions-as-patterns/master/doc/clojure.core%24partition_all_post.png)
+
 
 
 # License
