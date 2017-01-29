@@ -18,9 +18,6 @@ Add to your project.clj file:
 ```clojure
 (require 'functions-as-patterns.core :refer :all)
 
-;; If you want rendered images also going to disk
-(set-dir! "/tmp/") 
-
 (view
  (partition 3 (hues 10))))
 
