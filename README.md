@@ -29,33 +29,29 @@ Add to your project.clj file:
 
 ```
 
-`partition`
+#### `partition`
 
 `3`
 
 with
 
-__Arg:__
-
 ![Argument](https://raw.githubusercontent.com/josephwilk/functions-as-patterns/master/doc/clojure.core%24partition_arg1.png)
 
-__Result:__
+__Result__
 
 ![Result](https://raw.githubusercontent.com/josephwilk/functions-as-patterns/master/doc/clojure.core%24partition_post.png)
 
 
 
-`partition-all`
+#### `partition-all`
 
 `3`
 
 with
 
-__Arg:__
-
 ![Argument](https://raw.githubusercontent.com/josephwilk/functions-as-patterns/master/doc/clojure.core%24partition_all_arg1.png)
 
-__Result:__
+__Result__
 
 ![Result](https://raw.githubusercontent.com/josephwilk/functions-as-patterns/master/doc/clojure.core%24partition_all_post.png)
 
