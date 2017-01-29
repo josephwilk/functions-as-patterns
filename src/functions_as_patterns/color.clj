@@ -70,11 +70,17 @@
     (.drawChars g (char-array text) 0 (count (char-array text)) (int (+ (/ (- w (* 5 (count (char-array text))) ) 2) x)) (int (+ (/ h 2) y)))
     image))
 
-(defn paint-stroked-rectangle! [img color posx posy rect-w rect-h]
+(defn find-color [color-lookup v] (get color-lookup v v))
+
+(defn paint-stroked-rectangle! [img color-lookup seq-value posx posy rect-w rect-h]
   (let [x (+ posx stroke-size)
         y (+ posy stroke-size)
         w (- rect-w stroke-size)
-        h (- rect-h (* 2 stroke-size))]
+        h (- rect-h (* 2 stroke-size))
+
+        color (find-color color-lookup seq-value)
+
+        ]
     (fill-round-rect! img
                 posx posy
                 (+ w (* 2 stroke-size)) (+ (* 2 stroke-size) h)
@@ -90,21 +96,25 @@
 (defn leaf?     [node] (not (sequential? node)))
 (defn children? [node] (sequential? node))
 
-(defn paint-rectangle! [img color rect-size depth x-offset]
+(defn paint-rectangle! [img color-lookup color rect-size depth x-offset]
   (let [start-rect-size rect-start]
     (if (leaf? color)
-      (paint-stroked-rectangle! img color
+      (paint-stroked-rectangle! img
+                                color-lookup
+                                color
                                 x-offset   (/ (- start-rect-size rect-size) 2)
                                 rect-size   rect-size)
       (let [width (* (no-of-leaf-nodes color) rect-size)]
-        (paint-stroked-rectangle! img (container-color depth)
+        (paint-stroked-rectangle! img
+                                  color-lookup
+                                  (container-color depth)
                                   x-offset
                                   (/ (- start-rect-size rect-size) 2)
                                   width rect-size)))))
 
-(defn paint-all! [img rect-size x-offset depth]
+(defn paint-all! [img color-lookup rect-size x-offset depth]
   (fn [parent-indent [idx color]]
-    (paint-rectangle! img color rect-size depth parent-indent)
+    (paint-rectangle! img color-lookup color rect-size depth parent-indent)
 
     (if (children? color)
       (let [new-rect-size (/ rect-size 2)
@@ -113,19 +123,19 @@
         (+
          indent
          (reduce
-          (paint-all! img new-rect-size parent-indent (inc depth))
+          (paint-all! img color-lookup new-rect-size parent-indent (inc depth))
           (+ indent parent-indent)
           (map vector (range) color))))
       (+ parent-indent rect-size)
       )))
 
-(defn- render [data dir title]
+(defn- render [data color-lookup dir title]
   (let [rect-size rect-start
         total-cells  (no-of-leaf-nodes data)
         bi (new-image (+ (* total-cells rect-size) stroke-size) rect-size)]
 
     (fill! bi (colors/rgba-int stroke-color))
-    (reduce (paint-all! bi rect-size  0 0)
+    (reduce (paint-all! bi color-lookup rect-size 0 0)
             0
             (map vector (range) data))
     (show bi :zoom 1.0 :title title)
@@ -141,7 +151,7 @@
     c))
 
 (defn render-fn
-  ([fn-to-doc out dir & args]
+  ([fn-to-doc color-map out dir & args]
    (let [name (fn->str fn-to-doc)
          args (->>
                args
@@ -150,16 +160,17 @@
          out (map color->rgba out)]
      (dotimes [i (count args)]
        (try
-         (render (nth args i) dir (str name "_arg" i))
+         (render (nth args i)  color-map dir (str name "_arg" i))
          (catch Exception e (println "Unable to render:" (nth args i)))))
-     (render out dir (str name "_post")))))
+     (render out color-map dir (str name "_post")))))
 
 (defn example->color
   "Assumes arguments are colors"
-  [{fn-to-doc :fn args :args dir :dir}]
+  [{fn-to-doc :fn args :args dir :dir color-map :colors}]
   (let [args (vec args)]
     (apply render-fn
            fn-to-doc
+           (or color-map {})
            (apply fn-to-doc args)
            dir
            args)))
@@ -168,9 +179,10 @@
   "Forces any sequences into color values. This may not work..."
   [{fn-to-doc :fn args :args dir :dir}]
   (let [args (vec args)
-        args (map (fn [a] (if (sequential? a) (hues (count a)) a)) args)]
-    (apply render-fn
-           fn-to-doc
-           (apply fn-to-doc args)
-           dir
-           args)))
+        all-args (flatten args)
+        all-hues (hues (count all-args))
+        colors (reduce (fn [acc [idx v]]
+                         (assoc acc v (get acc v (nth all-hues idx))))
+                       {}
+                       (map vector (range) all-args))]
+    (example->color {:fn fn-to-doc :args args :dir dir :colors colors})))
