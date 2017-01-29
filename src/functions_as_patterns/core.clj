@@ -19,6 +19,7 @@
 (def rgb-text-color (colors/rgba-int text-color))
 
 (def rect-start 100)
+(def stroke-size 1)
 
 (defn int->color [i]
   (-> highlight-color
@@ -72,8 +73,7 @@
     image))
 
 (defn paint-stroked-rectangle! [img color posx posy rect-w rect-h]
-  (let [stroke-size 1
-        x (+ posx stroke-size)
+  (let [x (+ posx stroke-size)
         y (+ posy stroke-size)
         w (- rect-w stroke-size)
         h (- rect-h (* 2 stroke-size))]
@@ -134,7 +134,6 @@
 (defn render [data dir title]
   (let [rect-size rect-start
         total-cells  (no-of-leaf-nodes data)
-        stroke-size 1
         bi (new-image (+ (* total-cells rect-size) stroke-size) rect-size)]
 
     (fill! bi (colors/rgba-int stroke-color))
@@ -142,7 +141,8 @@
             0
             (map vector (range) data))
     (show bi :zoom 1.0 :title title)
-    (save bi (str dir "/" title ".png"))))
+    (when-not (clojure.string/blank? dir)
+      (save bi (str dir "/" title ".png")))))
 
 (defn fn->str [fn-to-convert] (-> (str fn-to-convert) (clojure.string/split #"@") first))
 
