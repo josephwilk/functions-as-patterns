@@ -7,14 +7,19 @@ Inspired by the work of Alex McLean ([@yaxu](https://github.com/yaxu)) using vis
 
 ### Install:
 
-[![Clojars Project](https://img.shields.io/clojars/v/functions-as-patterns.svg)](https://clojars.org/functions-as-patterns)
+Add to your project.clj file:
+
+```
+[functions-as-patterns "0.1.0-SNAPSHOT"]
+```
 
 ### Example:
 
 ```clojure
 (require 'functions-as-patterns.core :refer :all)
 
-(set-dir! "/tmp/") ;; Where rendered-images get saved
+;; If you want rendered images also going to disk
+(set-dir! "/tmp/") 
 
 (view
  (partition 2 (partition 3 (hues 10))))
