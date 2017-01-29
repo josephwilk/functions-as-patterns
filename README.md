@@ -30,11 +30,11 @@ Add to your project.clj file:
 ```
 
 #### `(partition 3` ![Argument](https://raw.githubusercontent.com/josephwilk/functions-as-patterns/master/doc/clojure.core%24partition_arg1.png))
-;;=>
+***;;=>***
 ![Result](https://raw.githubusercontent.com/josephwilk/functions-as-patterns/master/doc/clojure.core%24partition_post.png)
 
 #### `(partition-all 3` ![Argument](https://raw.githubusercontent.com/josephwilk/functions-as-patterns/master/doc/clojure.core%24partition_all_arg1.png))
-;;=>
+***;;=>***
 ![Result](https://raw.githubusercontent.com/josephwilk/functions-as-patterns/master/doc/clojure.core%24partition_all_post.png)
 
 
