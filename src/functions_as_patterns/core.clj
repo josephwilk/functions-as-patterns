@@ -18,6 +18,8 @@
 
 (def working-dir "/Users/josephwilk/Desktop/clojure_functions")
 
+(def rect-start 100)
+
 (defn int->color [i]
   (-> highlight-color
       (colors/adjust-hue (* i -50))
@@ -88,49 +90,47 @@
 (defn leaf?     [node] (not (sequential? node)))
 (defn children? [node] (sequential? node))
 
-(defn paint-rectangle! [img color rect-size depth x-offset y-offset]
-  (let [start-rect-size 100]
+(defn paint-rectangle! [img color rect-size depth x-offset]
+  (let [start-rect-size rect-start]
     (if (leaf? color)
       (paint-stroked-rectangle! img color
                                 x-offset   (/ (- start-rect-size rect-size) 2)
                                 rect-size   rect-size)
       (let [width (* (no-of-leaf-nodes color) rect-size)]
-        (paint-stroked-rectangle! img (container-color depth)
+        (paint-stroked-rectangle! img (rand-colour)
                                   x-offset
                                   (/ (- start-rect-size rect-size) 2)
                                   width rect-size)))))
 
-(defn paint-all! [img rect-size x-offset y-offset depth]
+(defn paint-all! [img rect-size x-offset depth]
   (fn [parent-indent [idx color]]
     (println "[paint-all!]: " :indent parent-indent :size rect-size color)
     (paint-rectangle! img color rect-size
                       depth
-                      parent-indent y-offset)
+                      parent-indent)
 
     (if (children? color)
-      (let [no-children     (no-of-leaf-nodes color)
-            new-rect-size   (/ rect-size 2)
-            middle-position 0
-            _ (comment (/ (-
-                           (+ (* 2 x-offset) (* rect-new-size no-children))
-                           (* new-rect-size no-children))
-                          2))]
+      (let [new-rect-size (/ rect-size 2)
+            indent        (/ rect-size 2 2)]
         (+
-         (/ rect-size 2) ;;The indent spacing
+         indent
          (reduce
             (paint-all!
              img
-             (/ rect-size 2)
-             (+ parent-indent middle-position)
-             (/ rect-size 2)
+             new-rect-size
+             parent-indent
              (inc depth))
-            parent-indent
+            (+ indent parent-indent)
             (map vector (range) color))))
       (+ parent-indent rect-size)
       )))
 
+
+(view (identity [[(rand-colour)] [(rand-colour) (rand-colour)]]))
+
 (comment
-  (view (identity [[(rand-colour)] [(rand-colour) (rand-colour)]]))
+  (view (partition 1 (partition 2 (hues 10))))
+
   (view (identity [[[[(rand-colour)]]]]))
   (view (identity [[(rand-colour) (rand-colour) (rand-colour)]]))
   (view (identity [(rand-colour)]))
@@ -139,15 +139,14 @@
   (view (identity [[[[(rand-colour)]]]]))
   )
 
-
 (defn render [data title]
-  (let [rect-size 100
+  (let [rect-size rect-start
         total-cells  (no-of-leaf-nodes data)
         stroke-size 1
         bi (new-image (+ (* 2 total-cells rect-size) stroke-size) (* 2 rect-size))]
 
     (fill! bi (colors/rgba-int stroke-color))
-    (reduce (paint-all! bi rect-size  0 0 0)
+    (reduce (paint-all! bi rect-size  0 0)
             0
             (map vector (range) data))
     (show bi :zoom 1.0 :title title)
