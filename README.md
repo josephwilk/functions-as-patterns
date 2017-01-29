@@ -10,6 +10,8 @@ Inspired by the work of Alex McLean ([@yaxu](https://github.com/yaxu)) using vis
 ```clojure
 (require 'functions-as-patterns.core :refer :all)
 
+(set-dir! "/tmp/") ;; Where rendered-images get saved
+
 (view
  (partition 2 (partition 3 (hues 10))))
 ```
