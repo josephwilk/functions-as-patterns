@@ -154,8 +154,21 @@
          (catch Exception e (println "Unable to render:" (nth args i)))))
      (render out dir (str name "_post")))))
 
-(defn example->color [{fn-to-doc :fn args :args dir :dir}]
+(defn example->color
+  "Assumes arguments are colors"
+  [{fn-to-doc :fn args :args dir :dir}]
   (let [args (vec args)]
+    (apply render-fn
+           fn-to-doc
+           (apply fn-to-doc args)
+           dir
+           args)))
+
+(defn example->forced-color
+  "Forces any sequences into color values. This may not work..."
+  [{fn-to-doc :fn args :args dir :dir}]
+  (let [args (vec args)
+        args (map (fn [a] (if (sequential? a) (hues (count a)) a)) args)]
     (apply render-fn
            fn-to-doc
            (apply fn-to-doc args)
