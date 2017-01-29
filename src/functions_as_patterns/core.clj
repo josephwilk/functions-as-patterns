@@ -3,6 +3,8 @@
            [mikera.image.colours :refer :all]
            [com.evocomputing.colors :as colors]))
 
+(def working-dir (atom ""))
+
 (def blank-color     (colors/create-color "#663477"))
 (def highlight-color (colors/create-color "#EE5C96"))
 (def stroke-color    (colors/create-color "#111111"))
@@ -16,8 +18,6 @@
 (def rgb-stroke-color    (colors/rgba-int stroke-color))
 (def rgb-text-color (colors/rgba-int text-color))
 
-(def working-dir "/Users/josephwilk/Desktop/clojure_functions")
-
 (def rect-start 100)
 
 (defn int->color [i]
@@ -27,7 +27,7 @@
 
 (defn container-color [depth]
   (-> blank-color
-      (colors/adjust-hue (* depth -30))
+      (colors/adjust-hue (* depth -40))
       colors/rgba-int))
 
 (defn flatten-all [coll]
@@ -97,40 +97,32 @@
                                 x-offset   (/ (- start-rect-size rect-size) 2)
                                 rect-size   rect-size)
       (let [width (* (no-of-leaf-nodes color) rect-size)]
-        (paint-stroked-rectangle! img (rand-colour)
+        (paint-stroked-rectangle! img (container-color depth)
                                   x-offset
                                   (/ (- start-rect-size rect-size) 2)
                                   width rect-size)))))
 
 (defn paint-all! [img rect-size x-offset depth]
   (fn [parent-indent [idx color]]
-    (println "[paint-all!]: " :indent parent-indent :size rect-size color)
-    (paint-rectangle! img color rect-size
-                      depth
-                      parent-indent)
+    (paint-rectangle! img color rect-size depth parent-indent)
 
     (if (children? color)
       (let [new-rect-size (/ rect-size 2)
-            indent        (/ rect-size 2 2)]
+            indent (/ (* rect-size (no-of-leaf-nodes color))
+                      2 2)]
         (+
          indent
          (reduce
-            (paint-all!
-             img
-             new-rect-size
-             parent-indent
-             (inc depth))
-            (+ indent parent-indent)
-            (map vector (range) color))))
+          (paint-all! img new-rect-size parent-indent (inc depth))
+          (+ indent parent-indent)
+          (map vector (range) color))))
       (+ parent-indent rect-size)
       )))
 
-
-(view (identity [[(rand-colour)] [(rand-colour) (rand-colour)]]))
-
 (comment
-  (view (partition 1 (partition 2 (hues 10))))
-
+  (view (identity [[[(rand-colour) (rand-colour)]] [(rand-colour) (rand-colour)]]))
+  (view (identity [[(rand-colour)] [(rand-colour) (rand-colour)]]))
+  (view (identity [[(rand-colour) (rand-colour) (rand-colour)]]))
   (view (identity [[[[(rand-colour)]]]]))
   (view (identity [[(rand-colour) (rand-colour) (rand-colour)]]))
   (view (identity [(rand-colour)]))
@@ -139,18 +131,18 @@
   (view (identity [[[[(rand-colour)]]]]))
   )
 
-(defn render [data title]
+(defn render [data dir title]
   (let [rect-size rect-start
         total-cells  (no-of-leaf-nodes data)
         stroke-size 1
-        bi (new-image (+ (* 2 total-cells rect-size) stroke-size) (* 2 rect-size))]
+        bi (new-image (+ (* total-cells rect-size) stroke-size) rect-size)]
 
     (fill! bi (colors/rgba-int stroke-color))
     (reduce (paint-all! bi rect-size  0 0)
             0
             (map vector (range) data))
     (show bi :zoom 1.0 :title title)
-    (save bi (str working-dir "/" title ".png"))))
+    (save bi (str dir "/" title ".png"))))
 
 (defn fn->str [fn-to-convert] (-> (str fn-to-convert) (clojure.string/split #"@") first))
 
@@ -161,26 +153,26 @@
     c))
 
 (defn render-fn
-  ([fn-to-doc out & args]
+  ([fn-to-doc out dir & args]
    (let [name (fn->str fn-to-doc)
          args (->>
                args
                (map (fn [a] (if (sequential? a) a [a])))
                (map (fn [args] (map color->rgba args))))
-         out (map color->rgba out)
-         ]
+         out (map color->rgba out)]
      (dotimes [i (count args)]
        (try
-         (render (nth args i)  (str name "_arg" i))
+         (render (nth args i) dir (str name "_arg" i))
          (catch Exception e (println "Unable to render:" (nth args i)))))
-     (render out (str name "_post"))
-     )))
+     (render out dir (str name "_post")))))
 
 (defn example->color [{fn-to-doc :fn args :args}]
-  (let [args (vec args)]
+  (let [dir @working-dir
+        args (vec args)]
     (apply render-fn
            fn-to-doc
            (apply fn-to-doc args)
+           dir
            args)))
 
 (defmacro view [[fn-to-view & args]]
@@ -188,19 +180,4 @@
     `(example->color
       {:fn ~fn-to-view :args ~v})))
 
-
-
-
-;;(view (identity [(rand-colour) (rand-colour) (rand-colour)]))
-
-
-                                        ;Troublesome Examples
-(comment
-  ;;;Misses second box!
-  (view (identity [[[(rand-colour)]]  [[(rand-colour)]]]))
-
-  (view (partition-all 3  (hues 10)))
-
-  ;;Behaving
-  (view (partition-all 3 (partition 2 (hues 11))))
-  (view (identity [[[(rand-colour)]]  [(rand-colour) (rand-colour)]])))
+(defn set-dir! [dir] (reset! working-dir dir))

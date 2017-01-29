@@ -1,6 +1,9 @@
 (ns functions-as-patterns.seq
   (:require [functions-as-patterns.core :refer :all]))
 
+(def doc-dir (str (clojure.string/replace (:out (clojure.java.shell/sh "pwd")) "\n" "") "/doc/" ))
+(set-dir! doc-dir)
+
 ;;Get shorter
 ;;;distinct filter remove take-nth for
 
@@ -50,7 +53,7 @@
 ;;(view (group-by  (hues 10)))
 
 ;;Rendering fun :)
-(view (partition-all 2 (partition 3 (hues 10))))
+(view (partition-all 3  (hues 10)))
 
 ;;Rearrange
 ;;;reverse sort sort-by compare
