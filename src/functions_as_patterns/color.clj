@@ -179,7 +179,7 @@
   "Forces any sequences into color values. This may not work..."
   [{fn-to-doc :fn args :args dir :dir}]
   (let [args (vec args)
-        all-args (flatten args)
+        all-args (flatten (remove (fn [a] (not (sequential? a))) args))
         all-hues (hues (count all-args))
         colors (reduce (fn [acc [idx v]]
                          (assoc acc v (get acc v (nth all-hues idx))))
