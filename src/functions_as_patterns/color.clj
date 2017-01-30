@@ -16,7 +16,7 @@
 (def rgb-stroke-color    (colors/rgba-int stroke-color))
 (def rgb-text-color (colors/rgba-int text-color))
 
-(def rect-start 100)
+(def rect-start 70)
 (def stroke-size 2)
 
 (defn int->color [i]
