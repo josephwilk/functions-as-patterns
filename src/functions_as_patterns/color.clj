@@ -127,8 +127,8 @@
     (reduce (paint-all! bi color-lookup rect-size 0 0)
             0
             (map vector (range) data))
-    (show bi :zoom 1.0 :title title)
-    (when-not (clojure.string/blank? dir)
+    (if (clojure.string/blank? dir)
+      (show bi :zoom 1.0 :title title)
       (save bi (str dir "/" title ".png")))))
 
 (defn- fn->str [fn-to-convert]
