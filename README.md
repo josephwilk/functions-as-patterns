@@ -33,11 +33,14 @@ Add to your project.clj file:
 ***;;=>***
 ![Result](https://raw.githubusercontent.com/josephwilk/functions-as-patterns/master/doc/clojure.core%24partition_all_post.png)
 
-## Api
+## Api:
 
 ```
-;;Render to file
+;;Render to file, assume arguments are colors
 (render "/tmp/" (partition 2 (hues 10)))
+
+;;Render to file, convert arguments to colors
+(render "/tmp/" (partition 2 (range 10)))
 
 ;;Render assuming arguments are colors
 (view (partition 2 (hues 10)))
