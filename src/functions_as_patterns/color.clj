@@ -131,7 +131,13 @@
     (when-not (clojure.string/blank? dir)
       (save bi (str dir "/" title ".png")))))
 
-(defn- fn->str [fn-to-convert] (-> (str fn-to-convert) (clojure.string/split #"@") first))
+(defn- fn->str [fn-to-convert]
+  (-> (str fn-to-convert)
+      (clojure.string/split #"@")
+      first
+      (clojure.string/replace #"__4385" "") ;;Some odd clojure fn noise?
+      (clojure.string/replace #"__4331" "")
+      ))
 
 (defn- color->rgba [c]
   (if (= (type c)
