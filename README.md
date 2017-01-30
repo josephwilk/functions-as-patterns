@@ -18,12 +18,11 @@ Add to your project.clj file:
 ```clojure
 (require 'functions-as-patterns.core :refer :all)
 
-(view
- (partition 3 (hues 10))))
+(view-as-colors 
+  (partition 3 (range 10)))
 
-(view
- (partition-all 3 (hues 10))))
-
+(view-as-colors
+  (partition-all 3 (range 10))))
 ```
 
 #### `(partition 3` ![Argument](https://raw.githubusercontent.com/josephwilk/functions-as-patterns/master/doc/clojure.core%24partition_arg1.png))
@@ -34,7 +33,18 @@ Add to your project.clj file:
 ***;;=>***
 ![Result](https://raw.githubusercontent.com/josephwilk/functions-as-patterns/master/doc/clojure.core%24partition_all_post.png)
 
+## Api
 
+```
+;;Render to file
+(render "/tmp/" (partition 2 (hues 10)))
+
+;;Render assuming arguments are colors
+(view (partition 2 (hues 10)))
+
+;;Render mapping arguments to colors
+(view-as-colors (partition 2 (range 10)))
+```
 
 # License
 
