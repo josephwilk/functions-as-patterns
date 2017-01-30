@@ -40,7 +40,7 @@ Add to your project.clj file:
 (render "/tmp/" (partition 2 (hues 10)))
 
 ;;Render to file, convert arguments to colors
-(render "/tmp/" (partition 2 (range 10)))
+(render-as-colors "/tmp/" (partition 2 (range 10)))
 
 ;;Render assuming arguments are colors
 (view (partition 2 (hues 10)))
