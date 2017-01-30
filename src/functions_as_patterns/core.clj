@@ -15,6 +15,10 @@
   (let  [v (vec args)]
     `(color/example->color {:fn ~fn-to-view :args ~v :dir ~dir})))
 
+(defmacro render-as-colors [dir [fn-to-view & args]]
+  (let  [v (vec args)]
+    `(color/example->forced-color {:fn ~fn-to-view :args ~v :dir ~dir})))
+
 (comment
   (view-as-colors (partition-all 2 [1 2 3]))
 
