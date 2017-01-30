@@ -42,7 +42,7 @@
 ;;;take take-while butlast drop-last for
 
 (render doc-dir (butlast (concat (color/color-seq 2) (color/color-seq 2 color/rgb-highlight-color))))
-(render doc-dir (drop-last (concat (color/color-seq 2) (color/color-seq 2 color/rgb-highlight-color))))
+(render doc-dir (drop-last 2 (concat (color/color-seq 2) (color/color-seq 2 color/rgb-highlight-color))))
 
 ;;Change
 ;;;flatten group-by partition partition-all partition-by split-at split-with filter
