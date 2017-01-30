@@ -98,19 +98,11 @@
 
 (defn paint-rectangle! [img color-lookup color rect-size depth x-offset]
   (let [start-rect-size rect-start]
-    (if (leaf? color)
-      (paint-stroked-rectangle! img
-                                color-lookup
-                                color
-                                x-offset   (/ (- start-rect-size rect-size) 2)
-                                rect-size   rect-size)
-      (let [width (* (no-of-leaf-nodes color) rect-size)]
-        (paint-stroked-rectangle! img
-                                  color-lookup
-                                  (container-color depth)
-                                  x-offset
-                                  (/ (- start-rect-size rect-size) 2)
-                                  width rect-size)))))
+    (let [y-offset (/ (- start-rect-size rect-size) 2)]
+      (if (leaf? color)
+        (paint-stroked-rectangle! img color-lookup color x-offset y-offset rect-size rect-size)
+        (let [width (* (no-of-leaf-nodes color) rect-size)]
+          (paint-stroked-rectangle! img color-lookup (container-color depth) x-offset y-offset width rect-size))))))
 
 (defn paint-all! [img color-lookup rect-size x-offset depth]
   (fn [parent-indent [idx color]]
@@ -167,16 +159,13 @@
 (defn example->color
   "Assumes arguments are colors"
   [{fn-to-doc :fn args :args dir :dir color-map :colors}]
-  (let [args (vec args)]
-    (apply render-fn
-           fn-to-doc
-           (or color-map {})
-           (apply fn-to-doc args)
-           dir
-           args)))
+  (let [args (vec args)
+        out (apply fn-to-doc args)
+        color-map (or color-map {})]
+    (apply render-fn fn-to-doc color-map out dir args)))
 
 (defn example->forced-color
-  "Forces any sequences into color values. This may not work..."
+  "Forces any sequences into color values."
   [{fn-to-doc :fn args :args dir :dir}]
   (let [args (vec args)
         all-args (flatten (remove (fn [a] (not (sequential? a))) args))
