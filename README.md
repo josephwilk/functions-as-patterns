@@ -35,7 +35,7 @@ Add to your project.clj file:
 
 ## Api:
 
-```
+```clojure
 ;;Render to file, assume arguments are colors
 (render "/tmp/" (partition 2 (hues 10)))
 
