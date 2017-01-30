@@ -11,7 +11,7 @@
   (let  [v (vec args)]
     `(color/example->forced-color {:fn ~fn-to-view :args ~v})))
 
-(defmacro render [[dir fn-to-view & args]]
+(defmacro render [dir [fn-to-view & args]]
   (let  [v (vec args)]
     `(color/example->color {:fn ~fn-to-view :args ~v :dir ~dir})))
 
