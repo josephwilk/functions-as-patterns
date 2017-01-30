@@ -17,29 +17,12 @@
 (def rgb-text-color (colors/rgba-int text-color))
 
 (def rect-start 100)
-(def stroke-size 1)
+(def stroke-size 2)
 
 (defn int->color [i]
   (-> highlight-color
       (colors/adjust-hue (* i -50))
       colors/rgba-int))
-
-(defn container-color [depth]
-  (-> blank-color
-      (colors/adjust-hue (* depth -40))
-      colors/rgba-int))
-
-(defn flatten-all [coll]
-  (lazy-seq
-   (when-let [s (seq coll)]
-     (if (coll? (first s))
-       (concat (flatten (first s)) (flatten-all (rest s)))
-       (cons (first s) (flatten-all (rest s)))))))
-
-(defn no-of-leaf-nodes [col]
-  (if (sequential? col)
-    (count (flatten-all col))
-    0))
 
 (defn hues
   ([steps] (hues 25 steps highlight-color))
@@ -55,7 +38,24 @@
   ([n] (color-seq n rgb-blank-color))
   ([n color] (take n (cycle [color]))))
 
-(defn fill-round-rect!
+(defn- container-color [depth]
+  (-> blank-color
+      (colors/adjust-hue (* depth -40))
+      colors/rgba-int))
+
+(defn- flatten-all [coll]
+  (lazy-seq
+   (when-let [s (seq coll)]
+     (if (coll? (first s))
+       (concat (flatten (first s)) (flatten-all (rest s)))
+       (cons (first s) (flatten-all (rest s)))))))
+
+(defn- no-of-leaf-nodes [col]
+  (if (sequential? col)
+    (count (flatten-all col))
+    0))
+
+(defn- fill-round-rect!
   ([image x y w h colour]
    (let [g (graphics image)
          ^Color colour (to-java-color colour)]
@@ -63,24 +63,22 @@
      (.fillRect g (int x) (int y) (int w) (int h))
      image)))
 
-(defn draw-chars! [image text x y w h colour]
+(defn- draw-chars! [image text x y w h colour]
   (let [g (graphics image)
         ^Color colour (to-java-color colour)]
     (.setColor g colour)
     (.drawChars g (char-array text) 0 (count (char-array text)) (int (+ (/ (- w (* 5 (count (char-array text))) ) 2) x)) (int (+ (/ h 2) y)))
     image))
 
-(defn find-color [color-lookup v] (get color-lookup v v))
+(defn- find-color [color-lookup v] (get color-lookup v v))
 
-(defn paint-stroked-rectangle! [img color-lookup seq-value posx posy rect-w rect-h]
+(defn- paint-stroked-rectangle! [img color-lookup seq-value posx posy rect-w rect-h]
   (let [x (+ posx stroke-size)
         y (+ posy stroke-size)
         w (- rect-w stroke-size)
         h (- rect-h (* 2 stroke-size))
+        color (find-color color-lookup seq-value)]
 
-        color (find-color color-lookup seq-value)
-
-        ]
     (fill-round-rect! img
                 posx posy
                 (+ w (* 2 stroke-size)) (+ (* 2 stroke-size) h)
@@ -93,18 +91,17 @@
       ;; debug
       (draw-chars! img (str posx) x y w h rgb-text-color))))
 
-(defn leaf?     [node] (not (sequential? node)))
-(defn children? [node] (sequential? node))
+(defn- leaf?     [node] (not (sequential? node)))
+(defn- children? [node] (sequential? node))
 
-(defn paint-rectangle! [img color-lookup color rect-size depth x-offset]
-  (let [start-rect-size rect-start]
-    (let [y-offset (/ (- start-rect-size rect-size) 2)]
-      (if (leaf? color)
-        (paint-stroked-rectangle! img color-lookup color x-offset y-offset rect-size rect-size)
-        (let [width (* (no-of-leaf-nodes color) rect-size)]
-          (paint-stroked-rectangle! img color-lookup (container-color depth) x-offset y-offset width rect-size))))))
+(defn- paint-rectangle! [img color-lookup color rect-size depth x-offset]
+  (let [y-offset (/ (- rect-start rect-size) 2)]
+    (if (leaf? color)
+      (paint-stroked-rectangle! img color-lookup color x-offset y-offset rect-size rect-size)
+      (let [width (* (no-of-leaf-nodes color) rect-size)]
+        (paint-stroked-rectangle! img color-lookup (container-color depth) x-offset y-offset width rect-size)))))
 
-(defn paint-all! [img color-lookup rect-size x-offset depth]
+(defn- paint-all! [img color-lookup rect-size x-offset depth]
   (fn [parent-indent [idx color]]
     (paint-rectangle! img color-lookup color rect-size depth parent-indent)
 
@@ -130,11 +127,11 @@
     (reduce (paint-all! bi color-lookup rect-size 0 0)
             0
             (map vector (range) data))
-    (show bi :zoom 1.0 :title title)
+    (show bi :zoom 2.0 :title title)
     (when-not (clojure.string/blank? dir)
       (save bi (str dir "/" title ".png")))))
 
-(defn fn->str [fn-to-convert] (-> (str fn-to-convert) (clojure.string/split #"@") first))
+(defn- fn->str [fn-to-convert] (-> (str fn-to-convert) (clojure.string/split #"@") first))
 
 (defn- color->rgba [c]
   (if (= (type c)
@@ -142,7 +139,7 @@
     (colors/rgba-int c)
     c))
 
-(defn render-fn
+(defn- render-fn
   ([fn-to-doc color-map out dir & args]
    (let [name (fn->str fn-to-doc)
          args (->>
@@ -161,7 +158,7 @@
   [{fn-to-doc :fn args :args dir :dir color-map :colors}]
   (let [args (vec args)
         out (apply fn-to-doc args)
-        color-map (or color-map {})]
+       color-map (or color-map {})]
     (apply render-fn fn-to-doc color-map out dir args)))
 
 (defn example->forced-color
