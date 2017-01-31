@@ -137,6 +137,7 @@
       first
       (clojure.string/replace #"__4385" "") ;;Some odd clojure fn noise?
       (clojure.string/replace #"__4331" "")
+      (clojure.string/replace #"__4345" "")
       ))
 
 (defn- color->rgba [c]

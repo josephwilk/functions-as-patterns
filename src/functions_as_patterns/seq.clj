@@ -21,8 +21,8 @@
 ;;Get longer
 ;;;cons conj concat lazy-cat mapcat cycle interleave interpose
 
-(render doc-dir (cons   color/rgb-highlight-color (color/color-seq 3)))
-(render doc-dir (conj   (color/color-seq 3)        color/rgb-highlight-color))
+(render doc-dir (cons   color/rgb-highlight-color (color/color-seq 3  (last (color/hues 4)))))
+(render doc-dir (conj (color/color-seq 3 color/rgb-highlight-color) (last (color/hues 4))))
 (render doc-dir (concat (color/color-seq 3) (color/color-seq 3 color/rgb-highlight-color)))
 
 ;;fails (view (conj (color/hues 5) (color/hues 5)))
@@ -42,7 +42,7 @@
 ;;;take take-while butlast drop-last for
 
 (render doc-dir (butlast (concat (color/color-seq 2) (color/color-seq 2 color/rgb-highlight-color))))
-(render doc-dir (drop-last 2 (concat (color/color-seq 2) (color/color-seq 2 color/rgb-highlight-color))))
+(view (drop-last 2 (concat (color/color-seq 2) (color/color-seq 2 color/rgb-highlight-color))))
 
 ;;Change
 ;;;flatten group-by partition partition-all partition-by split-at split-with filter
