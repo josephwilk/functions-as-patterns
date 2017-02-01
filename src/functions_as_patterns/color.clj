@@ -118,7 +118,7 @@
       (+ parent-indent rect-size)
       )))
 
-(defn- render [data color-lookup dir title]
+(defn- render [data color-lookup dir prefix title]
   (let [rect-size rect-start
         total-cells  (no-of-leaf-nodes data)
         bi (new-image (+ (* total-cells rect-size) stroke-size) rect-size)]
@@ -129,7 +129,10 @@
             (map vector (range) data))
     (if (clojure.string/blank? dir)
       (show bi :zoom 1.0 :title title)
-      (save bi (str dir "/" title ".png")))))
+      (if (clojure.string/blank? prefix)
+        (save bi (str dir "/" title ".png"))
+        (save bi (str dir "/" title "_" prefix ".png"))
+        ))))
 
 (defn- fn->str [fn-to-convert]
   (-> (str fn-to-convert)
@@ -147,7 +150,7 @@
     c))
 
 (defn- render-fn
-  ([fn-to-doc color-map out dir & args]
+  ([fn-to-doc color-map out dir prefix & args]
    (let [name (fn->str fn-to-doc)
          args (->>
                args
@@ -157,21 +160,21 @@
          out (map color->rgba out)]
      (dotimes [i (count args)]
        (try
-         (render (nth args i)  color-map dir (str name "_arg" i))
+         (render (nth args i) color-map dir prefix (str name "_arg" i))
          (catch Exception e (println "Unable to render:" (nth args i)))))
-     (render out color-map dir (str name "_post")))))
+     (render out color-map dir prefix (str name "_post")))))
 
 (defn example->color
   "Assumes arguments are colors"
-  [{fn-to-doc :fn args :args dir :dir color-map :colors}]
+  [{fn-to-doc :fn args :args dir :dir  prefix :prefix color-map :colors}]
   (let [args (vec args)
         out (apply fn-to-doc args)
        color-map (or color-map {})]
-    (apply render-fn fn-to-doc color-map out dir args)))
+    (apply render-fn fn-to-doc color-map out dir prefix args)))
 
 (defn example->forced-color
   "Forces any sequences into color values."
-  [{fn-to-doc :fn args :args dir :dir}]
+  [{fn-to-doc :fn args :args dir :dir prefix :prefix}]
   (let [args (vec args)
         all-args (flatten (remove (fn [a] (not (sequential? a))) args))
         all-hues (hues (count all-args))
@@ -179,4 +182,4 @@
                          (assoc acc v (get acc v (nth all-hues idx))))
                        {}
                        (map vector (range) all-args))]
-    (example->color {:fn fn-to-doc :args args :dir dir :colors colors})))
+    (example->color {:fn fn-to-doc :args args :dir dir :colors colors  :prefix prefix})))

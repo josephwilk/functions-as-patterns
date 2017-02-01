@@ -21,12 +21,20 @@
 ;;Get longer
 ;;;cons conj concat lazy-cat mapcat cycle interleave interpose
 
-(render doc-dir (cons   color/rgb-highlight-color (color/color-seq 3  (last (color/hues 4)))))
-(render doc-dir (conj (color/color-seq 3 color/rgb-highlight-color) (last (color/hues 4))))
+(render doc-dir (cons  color/rgb-highlight-color (color/color-seq 3  (last (color/hues 4)))))
+(render doc-dir (conj  (color/color-seq 3 color/rgb-highlight-color) (last (color/hues 4))))
 (render doc-dir (concat (color/color-seq 3) (color/color-seq 3 color/rgb-highlight-color)))
 
-;;fails (view (conj (color/hues 5) (color/hues 5)))
-;;fails (view (lazy-cat (color-seq 3) (color-seq 3 rgb-highlight-color)))
+(render doc-dir (cons  color/rgb-highlight-color (color/color-seq 3  (last (color/hues 4)))))
+(render doc-dir (conj  [(last (color/hues 4))] (color/color-seq 3 color/rgb-highlight-color) ))
+
+(render-titled doc-dir "vec" (conj   [(last (color/hues 4))] (apply vector (color/color-seq 3 color/rgb-highlight-color))))
+(render-titled doc-dir "list" (conj  (list (last (color/hues 4))) (apply vector (color/color-seq 3 color/rgb-highlight-color))))
+
+(render doc-dir (concat (color/color-seq 3) (color/color-seq 3 color/rgb-highlight-color)))
+
+
+;; (view (lazy-cat (color/color-seq 3) (color/color-seq 3 color/rgb-highlight-color)))
 
 (render doc-dir (mapcat (fn [x] x) [(color/color-seq 3) (color/color-seq 3 color/rgb-highlight-color)]))
 (render doc-dir (interpose color/rgb-highlight-color (color/color-seq 5)))

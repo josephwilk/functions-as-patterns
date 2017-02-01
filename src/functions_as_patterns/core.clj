@@ -11,13 +11,19 @@
   (let  [v (vec args)]
     `(color/example->forced-color {:fn ~fn-to-view :args ~v})))
 
-(defmacro render [dir [fn-to-view & args]]
+(defmacro render-titled
+  [dir prefix [fn-to-view & args]]
   (let  [v (vec args)]
-    `(color/example->color {:fn ~fn-to-view :args ~v :dir ~dir})))
+    `(color/example->color {:fn ~fn-to-view :args ~v :dir ~dir :prefix ~prefix})))
+
+(defmacro render
+  [dir [fn-to-view & args]]
+  (let  [v (vec args)]
+    `(color/example->color {:fn ~fn-to-view :args ~v :dir ~dir :prefix ""})))
 
 (defmacro render-as-colors [dir [fn-to-view & args]]
   (let  [v (vec args)]
-    `(color/example->forced-color {:fn ~fn-to-view :args ~v :dir ~dir})))
+    `(color/example->forced-color {:fn ~fn-to-view :args ~v :dir ~dir :prefix ""})))
 
 (comment
   (view-as-colors (partition-all 2 [1 2 3]))
