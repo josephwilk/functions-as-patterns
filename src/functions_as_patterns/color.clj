@@ -151,6 +151,7 @@
    (let [name (fn->str fn-to-doc)
          args (->>
                args
+               (map (fn [a] (if (and (sequential? a) (= 1 (no-of-leaf-nodes a))) [a]  a )))
                (map (fn [a] (if (sequential? a) a [a])))
                (map (fn [args] (map color->rgba args))))
          out (map color->rgba out)]
