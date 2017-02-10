@@ -8,7 +8,9 @@
 ;;Get shorter
 ;;;distinct filter remove take-nth for
 
-(render doc-dir (distinct (sort (concat (color/hues 5) (color/hues 5)))))
+(render doc-dir (distinct (concat (take 2 (color/color-seq 2 color/rgb-highlight-color)) (take 2 (drop 3 (color/hues 5))) (color/color-seq 1 color/rgb-highlight-color))))
+
+(render doc-dir (dedupe (concat (take 2 (color/color-seq 2 color/rgb-highlight-color)) (take 2 (drop 3 (color/hues 5))) (color/color-seq 1 color/rgb-highlight-color))))
 
 ;;The pattern is more the fn than the filter/remove
 (render doc-dir (filter (fn [x] (= 0 (mod x 3))) (color/hues 10)))
