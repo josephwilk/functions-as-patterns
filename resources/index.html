@@ -6,7 +6,6 @@
 </head>
 <body>
 <pre style="visibility: hidden; position: absolute;"><code class="cljs">
-(def square-size 70)
 (def rect-size 70)
 (def rect-start 70)
 (def indent (/ square-size 2))
@@ -119,7 +118,7 @@
   data)
 </code></pre>
 <pre><code class="cljs" data-preamble="(reset! canvas-id &quot;canvas-2&quot;)">
-(view (interpose 1 [2 3 4]))
+(view (interpose 1 [2 3 [4 2] 5]))
 </code></pre>
 <canvas id="canvas-2" width="1000" height="1000"></canvas>
 
