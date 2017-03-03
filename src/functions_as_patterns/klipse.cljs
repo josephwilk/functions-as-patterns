@@ -2,6 +2,7 @@
 
 (def rect-size 70)
 (def rect-start 70)
+(def indent (/ square-size 2))
 (def stroke-size 2)
 
 (def canvas-id (atom "canvas-1"))
@@ -11,10 +12,10 @@
                "#65EE5C" "#5CEE8F" "#5CEECC" "#5CD3EE" "#5C96EE" "#5F5CEE" "#9C5CEE"
                "#D95CEE" "#EE5CC7" "#EE5C8A" "#EE6B5C" "#EEA85C" "#EEE55C" "#BAEE5C"])
 
-(def blank-color             "#663477")
-(def highlight-color         "#EE5C96")
-(def stroke-color            "#111111")
-(def text-color              "#ffffff")
+(def blank-color      "#663477")
+(def highlight-color "#EE5C96")
+(def stroke-color  "#111111")
+(def text-color "#ffffff")
 (def darker-highlight-color  "#3A396C")
 
 (defn container-color [depth] "#663477")
@@ -30,7 +31,9 @@
     (doto image
       (.beginPath)
       (.rect x y w h)
-      (.fill) )))
+      (.fill)
+      ;;(.strokeRect x y w h)
+      )))
 
 (defn- find-color [color-lookup v] (get color-lookup v v))
 
@@ -60,7 +63,7 @@
  (let [y-offset (/ (- rect-start rect-size) 2)]
    (if (leaf? color)
      (paint-stroked-rectangle! img color-lookup color x-offset y-offset rect-size rect-size)
-     (let [width (* (no-of-leaf-nodes color) (/ rect-size 2) )]
+     (let [width (* (no-of-leaf-nodes color) rect-size)]
        (paint-stroked-rectangle! img color-lookup (container-color depth) x-offset y-offset width rect-size)))))
 
 (defn- paint-all! [img color-lookup rect-size x-offset depth]
@@ -69,7 +72,8 @@
 
    (if (children? color)
      (let [new-rect-size (/ rect-size 2)
-           indent (/ new-rect-size 2)]
+           indent (/ (* rect-size (no-of-leaf-nodes color))
+                     2 2)]
        (+
         indent
         (reduce
